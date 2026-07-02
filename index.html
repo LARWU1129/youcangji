@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1B324F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="邮藏集">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>邮藏集 — 邮票收藏管理</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Install Banner -->
+<div class="install-banner" id="install-banner">
+  <div class="app-icon">邮</div>
+  <div class="app-info">
+    <div class="app-name">邮藏集</div>
+    <div class="app-hint">安装到主屏幕 · 全屏使用</div>
+  </div>
+  <button class="install-btn" id="install-btn">安装</button>
+  <span class="close-banner" id="close-banner">✕</span>
+</div>
+
+<div id="app">
+
+<!-- ========== HOME ========== -->
+<div class="page active" id="page-home">
+  <div class="home-greeting">
+    <h1>邮藏集</h1>
+    <p>发现 · 收藏 · 管理您的珍贵邮票</p>
+  </div>
+
+  <div class="home-stats">
+    <div class="home-stat"><div class="num">0</div><div class="label">藏品总数</div></div>
+    <div class="home-stat accent"><div class="num">0</div><div class="label">已收藏</div></div>
+    <div class="home-stat"><div class="num">0</div><div class="label">总价值</div></div>
+  </div>
+
+  <div class="px-lg">
+    <div class="section-title">最近浏览</div>
+  </div>
+  <div class="home-recent" id="recent-list"></div>
+
+  <div class="px-lg" style="margin-bottom:var(--space-md)">
+    <div class="section-title">快捷操作</div>
+  </div>
+  <div class="home-actions">
+    <div class="home-action" data-page="page-market">
+      <div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <span>邮票市场</span>
+    </div>
+    <div class="home-action" data-page="page-add">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></div>
+      <span>录入藏品</span>
+    </div>
+    <div class="home-action" data-page="page-collect">
+      <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+      <span>我的收藏</span>
+    </div>
+    <div class="home-action" data-page="page-profile">
+      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+      <span>个人中心</span>
+    </div>
+  </div>
+
+  <div class="px-lg" style="margin-top:var(--space-md)">
+    <div class="section-title">拍卖动态</div>
+  </div>
+  <div class="home-recent" id="auction-list" style="margin-bottom:var(--space-2xl)"></div>
+</div>
+
+<!-- ========== MARKET ========== -->
+<div class="page" id="page-market">
+  <div class="top-bar">
+    <h1>邮票市场</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="search-bar" style="position:relative">
+    <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input type="text" id="market-search" placeholder="搜索邮票名称、年代…">
+  </div>
+  <div class="filter-bar">
+    <div class="filter-chip active" data-cat="all">全部</div>
+    <div class="filter-chip" data-cat="经典">经典</div>
+    <div class="filter-chip" data-cat="民国">民国</div>
+    <div class="filter-chip" data-cat="纪特">纪特</div>
+    <div class="filter-chip" data-cat="文革">文革</div>
+    <div class="filter-chip" data-cat="生肖">生肖</div>
+  </div>
+  <div class="stamp-grid" id="fav-grid" data-cat="all"></div>
+</div>
+
+<!-- ========== COLLECTIONS ========== -->
+<div class="page" id="page-collect">
+  <div class="top-bar">
+    <h1>我的收藏</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="stamp-grid" id="stamp-grid"></div>
+</div>
+
+<!-- ========== PROFILE ========== -->
+<div class="page" id="page-profile">
+  <div class="top-bar">
+    <h1>我的</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="profile-header">
+    <div class="profile-avatar">邮</div>
+    <div class="profile-name">集邮爱好者</div>
+    <div class="profile-email">stamp@youcangji.app</div>
+  </div>
+  <div class="profile-stats">
+    <div class="profile-stat"><div class="num" id="prof-collect">0</div><div class="label">收藏</div></div>
+    <div class="profile-stat"><div class="num" id="prof-value">0</div><div class="label">估值(万)</div></div>
+    <div class="profile-stat"><div class="num" id="prof-watch">4</div><div class="label">关注</div></div>
+  </div>
+  <div class="profile-menu">
+    <div class="menu-item"><span class="menu-text">我的帖子</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item"><span class="menu-text">浏览记录</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item"><span class="menu-text">拍卖提醒</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item"><span class="menu-text">关于我们</span><span class="menu-arrow">›</span></div>
+  </div>
+</div>
+
+<!-- ========== DETAIL ========== -->
+<div class="page" id="page-detail">
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
+    <h1>藏品详情</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="detail-hero" id="detail-hero">邮</div>
+  <div class="detail-body">
+    <div class="detail-header">
+      <h2 id="detail-title"></h2>
+      <div class="detail-fav" id="detail-fav-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </div>
+    </div>
+    <div class="detail-grid" id="detail-grid"></div>
+    <div class="detail-desc" id="detail-desc"></div>
+    <div class="detail-price" id="detail-price"></div>
+  </div>
+</div>
+
+<!-- ========== ADD ========== -->
+<div class="page" id="page-add">
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
+    <h1>录入藏品</h1>
+    <div style="width:36px"></div>
+  </div>
+  <form class="add-form" id="add-form">
+    <label>邮票名称 *</label>
+    <input type="text" id="add-name" placeholder="请输入邮票名称" required>
+
+    <label>年代</label>
+    <select id="add-dyn">
+      <option>清代</option><option>民国</option><option>新中国</option><option>解放区</option><option>外国</option>
+    </select>
+
+    <label>发行年份</label>
+    <input type="text" id="add-year" placeholder="如 1980">
+
+    <label>面值</label>
+    <input type="text" id="add-face" placeholder="如 8分">
+
+    <label>分类</label>
+    <select id="add-cat">
+      <option>经典</option><option>纪特</option><option>文革</option><option>生肖</option><option>普票</option>
+    </select>
+
+    <label>备注</label>
+    <textarea id="add-desc" placeholder="藏品描述、品相、来源…"></textarea>
+
+    <button type="submit" class="btn-primary">确认录入</button>
+  </form>
+</div>
+
+</div><!-- /app -->
+
+<div class="nav">
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-page="page-home">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>首页</span>
+    </button>
+    <button class="nav-item" data-page="page-market">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <span>市场</span>
+    </button>
+    <button class="nav-item" data-page="page-collect">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      <span>收藏</span>
+    </button>
+    <button class="nav-item" data-page="page-profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      <span>我的</span>
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
+</script>
+</body>
+</html>
