@@ -10,137 +10,241 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>邮藏集 — 邮票收藏管理</title>
-<link rel="stylesheet" href="css/style.css">
+<style>
+:root {
+  --color-primary: #1B324F; --color-primary-tint: #E6F4FE; --color-ink: #1A1A2E;
+  --color-bg: #FAF8F5; --color-surface: #F5F1EB; --color-accent: #C8963E;
+  --color-accent-tint: #FDF6E8; --color-border: #E5E0D8; --color-muted: #94A3B8;
+  --color-subtle: #64748B; --color-success: #29A383; --color-danger: #E93D82;
+  --font-display: 'Georgia','Noto Serif SC','SimSun',serif;
+  --font-body: -apple-system,'Inter',sans-serif;
+  --shadow-card: 0 1px 4px rgba(27,50,79,0.08), 0 4px 12px rgba(27,50,79,0.06);
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-pill: 9999px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --nav-height: 68px; --safe-bottom: env(safe-area-inset-bottom,12px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-ink);max-width:390px;margin:0 auto;position:relative;-webkit-font-smoothing:antialiased}
+
+/* === Pages === */
+.page{display:none;flex-direction:column;height:100%;overflow-y:auto;padding-bottom:calc(var(--nav-height)+var(--safe-bottom));-webkit-overflow-scrolling:touch}
+.page.active{display:flex}
+.page::-webkit-scrollbar{width:0}
+
+/* === Top Bar === */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:20px var(--space-lg) var(--space-sm);position:sticky;top:0;z-index:20;background:var(--color-bg)}
+.top-bar h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);background:var(--color-surface);border:1px solid var(--color-border);cursor:pointer;flex-shrink:0}
+
+/* === Bottom Nav === */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;max-width:390px;margin:0 auto;background:#FFF;border-top:1px solid var(--color-border);display:flex;justify-content:space-around;align-items:center;padding:8px 0 calc(8px+var(--safe-bottom));z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;cursor:pointer;padding:4px 16px;min-width:56px}
+.nav-item svg{width:24px;height:24px;fill:none;stroke:var(--color-muted);stroke-width:1.8}
+.nav-item.active svg{stroke:var(--color-primary)}
+.nav-item span{font-size:10px;color:var(--color-muted);font-weight:500}
+.nav-item.active span{color:var(--color-primary);font-weight:600}
+
+/* === Components === */
+.section-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--color-primary);margin-bottom:var(--space-md)}
+.px-lg{padding:0 var(--space-lg)}
+.card{background:#FFF;border-radius:var(--radius-md);box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+
+/* Home */
+.home-greeting{padding:0 var(--space-lg)}
+.home-greeting h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)}
+.home-greeting p{font-size:13px;color:var(--color-subtle);margin-top:4px}
+.home-stats{display:flex;gap:var(--space-sm);padding:0 var(--space-lg);margin:var(--space-lg) 0}
+.home-stat{flex:1;background:#FFF;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.home-stat .num{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary)}
+.home-stat.accent .num{color:var(--color-accent)}
+.home-stat .label{font-size:11px;color:var(--color-muted);margin-top:4px}
+.home-recent{display:flex;gap:12px;overflow-x:auto;padding:0 var(--space-lg);margin-bottom:var(--space-xl);scrollbar-width:none}
+.home-recent::-webkit-scrollbar{display:none}
+.recent-card{flex-shrink:0;width:140px;background:#FFF;border-radius:var(--radius-md);box-shadow:var(--shadow-card);border:1px solid var(--color-border);overflow:hidden;cursor:pointer}
+.recent-card:active{transform:scale(0.97)}
+.recent-card .thumb{width:100%;height:100px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:28px;color:var(--color-accent)}
+.recent-card .info{padding:8px 12px}
+.recent-card .title{font-family:var(--font-display);font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-card .meta{font-size:11px;color:var(--color-muted);margin-top:2px}
+.home-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);padding:0 var(--space-lg);margin-bottom:var(--space-xl)}
+.home-action{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:var(--radius-md);background:#FFF;border:1px solid var(--color-border);cursor:pointer;box-shadow:var(--shadow-card)}
+.home-action:active{background:var(--color-surface)}
+.home-action span{font-size:11px;color:var(--color-subtle);font-weight:500}
+
+/* Detail */
+.detail-hero{width:100%;height:280px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:64px;color:var(--color-accent)}
+.detail-body{padding:var(--space-lg);flex:1}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg)}
+.detail-header h2{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.3}
+.detail-fav{width:40px;height:40px;border-radius:50%;background:var(--color-accent-tint);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:1px solid var(--color-accent)}
+.detail-fav.liked{background:var(--color-danger);border-color:var(--color-danger)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)}
+.detail-item{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-md);border:1px solid var(--color-border)}
+.detail-item .label{font-size:11px;color:var(--color-muted);margin-bottom:4px}
+.detail-item .value{font-size:14px;font-weight:600;font-family:var(--font-display)}
+.detail-desc,.detail-price{background:#FFF;border-radius:var(--radius-md);padding:var(--space-lg);box-shadow:var(--shadow-card);border:1px solid var(--color-border);margin-bottom:var(--space-xl)}
+.detail-desc h3,.detail-price h3{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--color-primary);margin-bottom:var(--space-sm)}
+.detail-desc p{font-size:13px;line-height:1.7;color:var(--color-subtle)}
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.price-row+.price-row{border-top:1px solid var(--color-border)}
+.price-source{font-size:13px;color:var(--color-subtle)}
+.price-value{font-size:15px;font-weight:700;color:var(--color-danger);font-family:var(--font-display)}
+
+/* Install Banner */
+.install-banner{display:none;position:fixed;top:0;left:0;right:0;max-width:390px;margin:0 auto;background:var(--color-primary);color:#FFF;padding:12px var(--space-lg);z-index:400;align-items:center;gap:var(--space-md)}
+.install-banner.show{display:flex}
+.install-banner .app-icon{width:40px;height:40px;border-radius:10px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0}
+.install-banner .app-info{flex:1}
+.install-banner .app-name{font-size:14px;font-weight:600}
+.install-banner .app-hint{font-size:11px;opacity:0.7}
+.install-banner .install-btn{padding:6px 16px;border-radius:var(--radius-pill);background:#FFF;color:var(--color-primary);font-size:13px;font-weight:600;border:none;cursor:pointer}
+
+/* Search & Filter */
+.search-bar{padding:var(--space-sm) var(--space-lg);position:sticky;top:0;z-index:20;background:var(--color-bg)}
+.search-bar input{width:100%;padding:10px 16px 10px 38px;border-radius:var(--radius-pill);border:1px solid var(--color-border);background:#FFF;font-size:14px;outline:none;box-shadow:var(--shadow-card)}
+.filter-bar{display:flex;gap:8px;padding:var(--space-sm) var(--space-lg);overflow-x:auto;scrollbar-width:none}
+.filter-chip{padding:6px 14px;border-radius:var(--radius-pill);background:#FFF;border:1px solid var(--color-border);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--color-subtle)}
+.filter-chip.active{background:var(--color-primary);color:#FFF;border-color:var(--color-primary)}
+
+/* Stamp Grid */
+.stamp-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);padding:0 var(--space-lg) var(--space-xl)}
+.stamp-card{cursor:pointer}
+.stamp-card .thumb{width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:32px;color:var(--color-accent);border-radius:var(--radius-md) var(--radius-md) 0 0}
+.stamp-card .info{background:#FFF;padding:8px 12px;border-radius:0 0 var(--radius-md) var(--radius-md);border:1px solid var(--color-border);border-top:none}
+.stamp-card .name{font-family:var(--font-display);font-size:13px;font-weight:600}
+.stamp-card .price{font-size:12px;color:var(--color-danger);font-weight:600;margin-top:2px}
+
+/* Form */
+.form-page{padding:var(--space-lg)}
+.form-page label{display:block;font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:4px}
+.form-page input,.form-page select,.form-page textarea{width:100%;padding:10px 12px;border-radius:var(--radius-md);border:1px solid var(--color-border);background:#FFF;font-size:14px;margin-bottom:16px;outline:none;font-family:var(--font-body)}
+.form-page textarea{height:80px;resize:vertical}
+.btn-primary{width:100%;padding:14px;border-radius:var(--radius-md);background:var(--color-primary);color:#FFF;font-size:16px;font-weight:600;border:none;cursor:pointer}
+.btn-primary:active{opacity:0.85}
+
+/* Profile */
+.profile-header{text-align:center;padding:var(--space-2xl) var(--space-lg)}
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-md);font-family:var(--font-display);font-size:28px;color:#FFF}
+.profile-name{font-family:var(--font-display);font-size:18px;font-weight:700}
+.profile-email{font-size:12px;color:var(--color-subtle);margin-top:4px}
+.profile-stats{display:flex;gap:var(--space-sm);padding:0 var(--space-lg);margin-bottom:var(--space-xl)}
+.profile-stat{flex:1;text-align:center;background:#FFF;border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.profile-stat .num{font-size:20px;font-weight:700;font-family:var(--font-display);color:var(--color-primary)}
+.profile-stat .label{font-size:11px;color:var(--color-muted);margin-top:2px}
+.profile-menu{padding:0 var(--space-lg)}
+.menu-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#FFF;border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.menu-item:active{background:var(--color-surface)}
+.menu-item .menu-text{font-size:14px;font-weight:500}
+.menu-item .menu-arrow{color:var(--color-muted);font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--color-ink);color:#FFF;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* Empty */
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--color-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+</style>
 </head>
 <body>
 
 <!-- Install Banner -->
 <div class="install-banner" id="install-banner">
   <div class="app-icon">邮</div>
-  <div class="app-info">
-    <div class="app-name">邮藏集</div>
-    <div class="app-hint">安装到主屏幕 · 全屏使用</div>
-  </div>
+  <div class="app-info"><div class="app-name">邮藏集</div><div class="app-hint">添加到主屏幕，像 App 一样使用</div></div>
   <button class="install-btn" id="install-btn">安装</button>
-  <span class="close-banner" id="close-banner">✕</span>
 </div>
 
-<div id="app">
-
-<!-- ========== HOME ========== -->
+<!-- ===== HOME ===== -->
 <div class="page active" id="page-home">
-  <div class="home-greeting">
-    <h1>邮藏集</h1>
-    <p>发现 · 收藏 · 管理您的珍贵邮票</p>
+  <div style="padding:20px 16px 0">
+    <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)">邮藏集</h1>
+    <p style="font-size:13px;color:var(--color-subtle);margin-top:4px">发现 · 收藏 · 管理您的邮票</p>
   </div>
-
   <div class="home-stats">
-    <div class="home-stat"><div class="num">0</div><div class="label">藏品总数</div></div>
-    <div class="home-stat accent"><div class="num">0</div><div class="label">已收藏</div></div>
-    <div class="home-stat"><div class="num">0</div><div class="label">总价值</div></div>
+    <div class="home-stat"><div class="num" id="stat-total">8</div><div class="label">藏品总数</div></div>
+    <div class="home-stat accent"><div class="num" id="stat-fav">4</div><div class="label">已收藏</div></div>
+    <div class="home-stat"><div class="num" id="stat-value">218</div><div class="label">估值(万)</div></div>
   </div>
-
-  <div class="px-lg">
-    <div class="section-title">最近浏览</div>
-  </div>
+  <div class="px-lg" style="margin-bottom:12px"><div class="section-title">最近浏览</div></div>
   <div class="home-recent" id="recent-list"></div>
-
-  <div class="px-lg" style="margin-bottom:var(--space-md)">
-    <div class="section-title">快捷操作</div>
-  </div>
+  <div class="px-lg" style="margin-bottom:12px"><div class="section-title">快捷操作</div></div>
   <div class="home-actions">
-    <div class="home-action" data-page="page-market">
-      <div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+    <div class="home-action" onclick="showPage('page-market')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       <span>邮票市场</span>
     </div>
-    <div class="home-action" data-page="page-add">
-      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></div>
+    <div class="home-action" onclick="showPage('page-add')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
       <span>录入藏品</span>
     </div>
-    <div class="home-action" data-page="page-collect">
-      <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+    <div class="home-action" onclick="showPage('page-fav')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
       <span>我的收藏</span>
     </div>
-    <div class="home-action" data-page="page-profile">
-      <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+    <div class="home-action" onclick="showPage('page-profile')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
       <span>个人中心</span>
     </div>
   </div>
-
-  <div class="px-lg" style="margin-top:var(--space-md)">
-    <div class="section-title">拍卖动态</div>
-  </div>
-  <div class="home-recent" id="auction-list" style="margin-bottom:var(--space-2xl)"></div>
+  <div class="px-lg"><div class="section-title">拍卖动态</div></div>
+  <div class="home-recent" id="auction-list" style="margin-bottom:32px"></div>
 </div>
 
-<!-- ========== MARKET ========== -->
+<!-- ===== MARKET ===== -->
 <div class="page" id="page-market">
-  <div class="top-bar">
-    <h1>邮票市场</h1>
-    <div style="width:36px"></div>
+  <div class="top-bar"><h1>邮票市场</h1><div style="width:36px"></div></div>
+  <div class="search-bar"><input id="market-search" placeholder="搜索邮票名称、年代…" oninput="filterMarket()"></div>
+  <div class="filter-bar" id="filter-bar">
+    <span class="filter-chip active" data-cat="all" onclick="setFilter(this)">全部</span>
+    <span class="filter-chip" data-cat="清代" onclick="setFilter(this)">清代</span>
+    <span class="filter-chip" data-cat="民国" onclick="setFilter(this)">民国</span>
+    <span class="filter-chip" data-cat="新中国" onclick="setFilter(this)">新中国</span>
+    <span class="filter-chip" data-cat="外国" onclick="setFilter(this)">外国</span>
   </div>
-  <div class="search-bar" style="position:relative">
-    <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input type="text" id="market-search" placeholder="搜索邮票名称、年代…">
-  </div>
-  <div class="filter-bar">
-    <div class="filter-chip active" data-cat="all">全部</div>
-    <div class="filter-chip" data-cat="经典">经典</div>
-    <div class="filter-chip" data-cat="民国">民国</div>
-    <div class="filter-chip" data-cat="纪特">纪特</div>
-    <div class="filter-chip" data-cat="文革">文革</div>
-    <div class="filter-chip" data-cat="生肖">生肖</div>
-  </div>
-  <div class="stamp-grid" id="fav-grid" data-cat="all"></div>
+  <div class="stamp-grid" id="market-grid"></div>
 </div>
 
-<!-- ========== COLLECTIONS ========== -->
-<div class="page" id="page-collect">
-  <div class="top-bar">
-    <h1>我的收藏</h1>
-    <div style="width:36px"></div>
-  </div>
-  <div class="stamp-grid" id="stamp-grid"></div>
+<!-- ===== FAVORITES ===== -->
+<div class="page" id="page-fav">
+  <div class="top-bar"><h1>我的收藏</h1><div style="width:36px"></div></div>
+  <div class="stamp-grid" id="fav-grid"></div>
 </div>
 
-<!-- ========== PROFILE ========== -->
+<!-- ===== PROFILE ===== -->
 <div class="page" id="page-profile">
-  <div class="top-bar">
-    <h1>我的</h1>
-    <div style="width:36px"></div>
-  </div>
+  <div class="top-bar"><h1>我的</h1><div style="width:36px"></div></div>
   <div class="profile-header">
     <div class="profile-avatar">邮</div>
     <div class="profile-name">集邮爱好者</div>
     <div class="profile-email">stamp@youcangji.app</div>
   </div>
   <div class="profile-stats">
-    <div class="profile-stat"><div class="num" id="prof-collect">0</div><div class="label">收藏</div></div>
-    <div class="profile-stat"><div class="num" id="prof-value">0</div><div class="label">估值(万)</div></div>
-    <div class="profile-stat"><div class="num" id="prof-watch">4</div><div class="label">关注</div></div>
+    <div class="profile-stat"><div class="num">8</div><div class="label">藏品</div></div>
+    <div class="profile-stat"><div class="num">4</div><div class="label">收藏</div></div>
+    <div class="profile-stat"><div class="num">6</div><div class="label">关注</div></div>
   </div>
   <div class="profile-menu">
     <div class="menu-item"><span class="menu-text">我的帖子</span><span class="menu-arrow">›</span></div>
     <div class="menu-item"><span class="menu-text">浏览记录</span><span class="menu-arrow">›</span></div>
-    <div class="menu-item"><span class="menu-text">拍卖提醒</span><span class="menu-arrow">›</span></div>
+    <div class="menu-item"><span class="menu-text">数据备份</span><span class="menu-arrow">›</span></div>
     <div class="menu-item"><span class="menu-text">关于我们</span><span class="menu-arrow">›</span></div>
   </div>
 </div>
 
-<!-- ========== DETAIL ========== -->
+<!-- ===== DETAIL ===== -->
 <div class="page" id="page-detail">
   <div class="top-bar">
-    <button class="back-btn"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
-    <h1>藏品详情</h1>
-    <div style="width:36px"></div>
+    <button class="back-btn" onclick="showPage('page-home')">‹</button>
+    <h1>藏品详情</h1><div style="width:36px"></div>
   </div>
   <div class="detail-hero" id="detail-hero">邮</div>
   <div class="detail-body">
     <div class="detail-header">
       <h2 id="detail-title"></h2>
-      <div class="detail-fav" id="detail-fav-btn">
-        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-      </div>
+      <div class="detail-fav" id="detail-fav-btn" onclick="toggleFav()">♡</div>
     </div>
     <div class="detail-grid" id="detail-grid"></div>
     <div class="detail-desc" id="detail-desc"></div>
@@ -148,72 +252,172 @@
   </div>
 </div>
 
-<!-- ========== ADD ========== -->
+<!-- ===== ADD ===== -->
 <div class="page" id="page-add">
   <div class="top-bar">
-    <button class="back-btn"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
-    <h1>录入藏品</h1>
-    <div style="width:36px"></div>
+    <button class="back-btn" onclick="showPage('page-home')">‹</button>
+    <h1>录入藏品</h1><div style="width:36px"></div>
   </div>
-  <form class="add-form" id="add-form">
-    <label>邮票名称 *</label>
-    <input type="text" id="add-name" placeholder="请输入邮票名称" required>
-
-    <label>年代</label>
-    <select id="add-dyn">
-      <option>清代</option><option>民国</option><option>新中国</option><option>解放区</option><option>外国</option>
-    </select>
-
-    <label>发行年份</label>
-    <input type="text" id="add-year" placeholder="如 1980">
-
-    <label>面值</label>
-    <input type="text" id="add-face" placeholder="如 8分">
-
-    <label>分类</label>
-    <select id="add-cat">
-      <option>经典</option><option>纪特</option><option>文革</option><option>生肖</option><option>普票</option>
-    </select>
-
-    <label>备注</label>
-    <textarea id="add-desc" placeholder="藏品描述、品相、来源…"></textarea>
-
-    <button type="submit" class="btn-primary">确认录入</button>
-  </form>
+  <div class="form-page">
+    <form id="add-form" onsubmit="handleAdd(event)">
+      <label>藏品名称 *</label>
+      <input id="add-name" placeholder="请输入邮票名称" required>
+      <label>年代</label>
+      <select id="add-dyn"><option>清代</option><option>民国</option><option>新中国</option><option>解放区</option><option>外国</option></select>
+      <label>发行年份</label>
+      <input id="add-year" placeholder="如 1897">
+      <label>面值</label>
+      <input id="add-face" placeholder="如 壹角银">
+      <label>备注</label>
+      <textarea id="add-desc" placeholder="藏品描述、品相、来源…"></textarea>
+      <button type="submit" class="btn-primary">确认录入</button>
+    </form>
+  </div>
 </div>
 
-</div><!-- /app -->
-
-<div class="nav">
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-page="page-home">
-      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      <span>首页</span>
-    </button>
-    <button class="nav-item" data-page="page-market">
-      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <span>市场</span>
-    </button>
-    <button class="nav-item" data-page="page-collect">
-      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-      <span>收藏</span>
-    </button>
-    <button class="nav-item" data-page="page-profile">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-      <span>我的</span>
-    </button>
-  </nav>
-</div>
+<!-- ===== NAV ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-page="page-home" onclick="navigate('page-home',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    <span>首页</span>
+  </button>
+  <button class="nav-item" data-page="page-market" onclick="navigate('page-market',this)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    <span>市场</span>
+  </button>
+  <button class="nav-item" data-page="page-fav" onclick="navigate('page-fav',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    <span>收藏</span>
+  </button>
+  <button class="nav-item" data-page="page-profile" onclick="navigate('page-profile',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+    <span>我的</span>
+  </button>
+</nav>
 
 <div class="toast" id="toast"></div>
 
-<script src="js/app.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js');
-  });
+// ===== DATA =====
+const STAMPS = [
+  {id:'s1',name:'大龙薄纸壹分银',dyn:'清代',year:'1878',face:'壹分银',cat:'经典',desc:'大龙邮票是中国第一套邮票，薄纸版壹分银为早期版本。图案为云龙戏珠，寓意吉祥，是中国邮政史的起点。',prices:[{s:'SPINK 2024',v:'HK$38,000'},{s:'华夏拍卖',v:'¥28,750'}]},
+  {id:'s2',name:'清代红印花小字当壹圆',dyn:'清代',year:'1897',face:'壹角银',cat:'经典',desc:'红印花加盖小字当壹圆是中国清代邮政珍邮之一，原票为红印花税票，加盖小字"当壹圆"后作为邮票使用。',prices:[{s:'中国嘉德',v:'¥287,500'},{s:'赵涌在线',v:'¥253,000'}]},
+  {id:'s3',name:'民国孙中山像贰圆',dyn:'民国',year:'1931',face:'贰圆',cat:'民国',desc:'伦敦版孙中山像邮票，由英国伦敦德纳罗公司雕刻印刷。线条细腻，印刷精良。',prices:[{s:'赵涌在线',v:'¥6,900'}]},
+  {id:'s4',name:'梅兰芳舞台艺术M',dyn:'新中国',year:'1962',face:'8分+50分',cat:'纪特',desc:'梅兰芳舞台艺术小型张，纪94M。新中国第一枚小型张，JT票之王。',prices:[{s:'中国嘉德',v:'¥218,500'},{s:'诚轩',v:'¥195,500'}]},
+  {id:'s5',name:'全国山河一片红',dyn:'新中国',year:'1968',face:'8分',cat:'文革',desc:'新中国最著名的珍邮之一，因地图问题被紧急撤销，少量流出。',prices:[{s:'中国嘉德',v:'¥1,035,000'},{s:'SPINK',v:'HK$1,200,000'}]},
+  {id:'s6',name:'庚申年猴票',dyn:'新中国',year:'1980',face:'8分',cat:'生肖',desc:'T46庚申年猴票，黄永玉设计，中国第一枚生肖邮票。',prices:[{s:'赵涌在线',v:'¥12,650'}]},
+  {id:'s7',name:'上海书信馆实寄封',dyn:'清代',year:'1902',face:'实寄封',cat:'经典',desc:'上海工部局书信馆实寄封，加盖改值，珍稀的邮政历史实物。',prices:[{s:'SPINK',v:'HK$22,000'}]},
+  {id:'s8',name:'慈禧寿辰纪念票',dyn:'清代',year:'1894',face:'贰分',cat:'经典',desc:'慈禧太后六十寿辰纪念邮票，中国第一套纪念邮票。',prices:[{s:'SPINK',v:'HK$15,000'}]},
+];
+let FAVS = ['s1','s4','s5','s6'];
+let currentDetail = null;
+
+function showPage(id){$$('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function $(s){return document.querySelector(s)}
+function $$(s){return[...document.querySelectorAll(s)]}
+
+function navigate(id,el){showPage(id);$$('.nav-item').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active')}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000)}
+
+function toggleFav(){
+  if(!currentDetail)return;
+  const i=FAVS.indexOf(currentDetail.id);
+  if(i>=0)FAVS.splice(i,1);else FAVS.push(currentDetail.id);
+  updateFavBtn();renderFavGrid();renderRecent()
 }
+function updateFavBtn(){
+  const btn=document.getElementById('detail-fav-btn');
+  if(!currentDetail)return;
+  btn.textContent=FAVS.includes(currentDetail.id)?'❤':'♡';
+  btn.classList.toggle('liked',FAVS.includes(currentDetail.id))
+}
+
+function showDetail(id){
+  const s=STAMPS.find(x=>x.id===id);if(!s)return;
+  currentDetail=s;showPage('page-detail');
+  document.getElementById('detail-hero').textContent='邮';
+  document.getElementById('detail-title').textContent=s.name;
+  updateFavBtn();
+  document.getElementById('detail-grid').innerHTML=
+    `<div class="detail-item"><div class="label">年代</div><div class="value">${s.dyn}</div></div>
+     <div class="detail-item"><div class="label">发行年份</div><div class="value">${s.year}</div></div>
+     <div class="detail-item"><div class="label">面值</div><div class="value">${s.face}</div></div>
+     <div class="detail-item"><div class="label">分类</div><div class="value">${s.cat}</div></div>`;
+  document.getElementById('detail-desc').innerHTML=`<h3>藏品介绍</h3><p>${s.desc}</p>`;
+  document.getElementById('detail-price').innerHTML=
+    `<h3>参考价格</h3>${s.prices.map(p=>`<div class="price-row"><span class="price-source">${p.s}</span><span class="price-value">${p.v}</span></div>`).join('')}`;
+}
+
+function renderRecent(){
+  const c=document.getElementById('recent-list');
+  c.innerHTML=STAMPS.slice(0,4).map(s=>`
+    <div class="recent-card" onclick="showDetail('${s.id}')">
+      <div class="thumb">邮</div>
+      <div class="info"><div class="title">${s.name}</div><div class="meta">${s.dyn} · ${s.year}</div></div>
+    </div>`).join('')
+}
+
+function renderFavGrid(){
+  const c=document.getElementById('fav-grid');
+  const list=STAMPS.filter(s=>FAVS.includes(s.id));
+  c.innerHTML=list.length?list.map(s=>`
+    <div class="stamp-card" onclick="showDetail('${s.id}')">
+      <div class="thumb">邮</div>
+      <div class="info"><div class="name">${s.name}</div><div class="price">${s.prices[0].v}</div></div>
+    </div>`).join(''):'<div class="empty-state"><div class="icon">📭</div><p>还没有收藏的邮票</p></div>'
+}
+
+function loadMarket(filter='all',query=''){
+  const c=document.getElementById('market-grid');
+  let list=filter==='all'?STAMPS:STAMPS.filter(s=>s.dyn===filter);
+  if(query)list=list.filter(s=>s.name.includes(query)||s.dyn.includes(query));
+  c.innerHTML=list.length?list.map(s=>`
+    <div class="stamp-card" onclick="showDetail('${s.id}')">
+      <div class="thumb">邮</div>
+      <div class="info"><div class="name">${s.name}</div><div class="price">${s.prices[0].v}</div></div>
+    </div>`).join(''):'<div class="empty-state"><div class="icon">🔍</div><p>没有匹配的藏品</p></div>'
+}
+function setFilter(el){$$('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');loadMarket(el.dataset.cat,document.getElementById('market-search').value)}
+function filterMarket(){const q=document.getElementById('market-search').value;const a=document.querySelector('.filter-chip.active');loadMarket(a?a.dataset.cat:'all',q)}
+
+function renderAuction(){
+  const c=document.getElementById('auction-list');
+  const items=[
+    {src:'中国嘉德',title:'2024秋季拍卖会',item:'全国山河一片红',price:'¥1,035,000'},
+    {src:'SPINK',title:'香港邮票专场',item:'红印花小字当壹圆',price:'HK$420,000'},
+    {src:'赵涌在线',title:'2024年11月场',item:'梅兰芳小型张',price:'¥201,250'},
+  ];
+  c.innerHTML=items.map(i=>`
+    <div class="recent-card" style="width:160px">
+      <div class="info" style="padding:12px">
+        <div style="font-size:11px;color:var(--color-accent);font-weight:600">${i.src}</div>
+        <div style="font-size:13px;font-weight:600;margin:4px 0">${i.title}</div>
+        <div style="font-size:11px;color:var(--color-muted)">${i.item}</div>
+        <div style="font-size:14px;color:var(--color-danger);font-weight:700;margin-top:4px">${i.price}</div>
+      </div>
+    </div>`).join('')
+}
+
+function handleAdd(e){
+  e.preventDefault();
+  const n=document.getElementById('add-name').value.trim();
+  if(!n){toast('请输入藏品名称');return}
+  toast('✅ 录入成功！')
+  document.getElementById('add-form').reset();
+  setTimeout(()=>showPage('page-fav'),800)
+}
+
+// Init
+renderRecent();renderFavGrid();loadMarket();renderAuction();
+
+// Install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.add('show')})
+document.getElementById('install-btn').onclick=async()=>{
+  if(deferredPrompt){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;if(r.outcome==='accepted'){document.getElementById('install-banner').classList.remove('show');toast('✅ 已安装到桌面')};deferredPrompt=null}
+}
+if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js')})}
 </script>
 </body>
 </html>
