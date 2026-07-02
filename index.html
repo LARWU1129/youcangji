@@ -11,33 +11,19 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>邮藏集 — 邮票收藏管理</title>
 <style>
-:root {
-  --color-primary: #1B324F; --color-primary-tint: #E6F4FE; --color-ink: #1A1A2E;
-  --color-bg: #FAF8F5; --color-surface: #F5F1EB; --color-accent: #C8963E;
-  --color-accent-tint: #FDF6E8; --color-border: #E5E0D8; --color-muted: #94A3B8;
-  --color-subtle: #64748B; --color-success: #29A383; --color-danger: #E93D82;
-  --font-display: 'Georgia','Noto Serif SC','SimSun',serif;
-  --font-body: -apple-system,'Inter',sans-serif;
-  --shadow-card: 0 1px 4px rgba(27,50,79,0.08), 0 4px 12px rgba(27,50,79,0.06);
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-pill: 9999px;
-  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
-  --nav-height: 68px; --safe-bottom: env(safe-area-inset-bottom,12px);
-}
+:root{--color-primary:#1B324F;--color-primary-tint:#E6F4FE;--color-ink:#1A1A2E;--color-bg:#FAF8F5;--color-surface:#F5F1EB;--color-accent:#C8963E;--color-accent-tint:#FDF6E8;--color-border:#E5E0D8;--color-muted:#94A3B8;--color-subtle:#64748B;--color-success:#29A383;--color-danger:#E93D82;--font-display:'Georgia','Noto Serif SC','SimSun',serif;--font-body:-apple-system,'Inter',sans-serif;--shadow-card:0 1px 4px rgba(27,50,79,0.08),0 4px 12px rgba(27,50,79,0.06);--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-pill:9999px;--space-xs:4px;--space-sm:8px;--space-md:12px;--space-lg:16px;--space-xl:24px;--space-2xl:32px;--nav-height:68px;--safe-bottom:env(safe-area-inset-bottom,12px)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-ink);max-width:390px;margin:0 auto;position:relative;-webkit-font-smoothing:antialiased}
-
-/* === Pages === */
 .page{display:none;flex-direction:column;height:100%;overflow-y:auto;padding-bottom:calc(var(--nav-height)+var(--safe-bottom));-webkit-overflow-scrolling:touch}
 .page.active{display:flex}
-.page::-webkit-scrollbar{width:0}
-
-/* === Top Bar === */
-.top-bar{display:flex;align-items:center;justify-content:space-between;padding:20px var(--space-lg) var(--space-sm);position:sticky;top:0;z-index:20;background:var(--color-bg)}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 8px;position:sticky;top:0;z-index:20;background:var(--color-bg)}
 .top-bar h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)}
-.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);background:var(--color-surface);border:1px solid var(--color-border);cursor:pointer;flex-shrink:0}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-sm);background:var(--color-surface);border:1px solid var(--color-border);cursor:pointer;flex-shrink:0;font-size:20px;color:var(--color-primary)}
+.section-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--color-primary);margin-bottom:12px}
+.px{padding:0 16px}
 
-/* === Bottom Nav === */
+/* Bottom Nav */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;max-width:390px;margin:0 auto;background:#FFF;border-top:1px solid var(--color-border);display:flex;justify-content:space-around;align-items:center;padding:8px 0 calc(8px+var(--safe-bottom));z-index:100}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;cursor:pointer;padding:4px 16px;min-width:56px}
 .nav-item svg{width:24px;height:24px;fill:none;stroke:var(--color-muted);stroke-width:1.8}
@@ -45,251 +31,282 @@ body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-i
 .nav-item span{font-size:10px;color:var(--color-muted);font-weight:500}
 .nav-item.active span{color:var(--color-primary);font-weight:600}
 
-/* === Components === */
-.section-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--color-primary);margin-bottom:var(--space-md)}
-.px-lg{padding:0 var(--space-lg)}
-.card{background:#FFF;border-radius:var(--radius-md);box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
-
 /* Home */
-.home-greeting{padding:0 var(--space-lg)}
-.home-greeting h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)}
-.home-greeting p{font-size:13px;color:var(--color-subtle);margin-top:4px}
-.home-stats{display:flex;gap:var(--space-sm);padding:0 var(--space-lg);margin:var(--space-lg) 0}
-.home-stat{flex:1;background:#FFF;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
-.home-stat .num{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary)}
-.home-stat.accent .num{color:var(--color-accent)}
-.home-stat .label{font-size:11px;color:var(--color-muted);margin-top:4px}
-.home-recent{display:flex;gap:12px;overflow-x:auto;padding:0 var(--space-lg);margin-bottom:var(--space-xl);scrollbar-width:none}
-.home-recent::-webkit-scrollbar{display:none}
-.recent-card{flex-shrink:0;width:140px;background:#FFF;border-radius:var(--radius-md);box-shadow:var(--shadow-card);border:1px solid var(--color-border);overflow:hidden;cursor:pointer}
-.recent-card:active{transform:scale(0.97)}
-.recent-card .thumb{width:100%;height:100px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:28px;color:var(--color-accent)}
-.recent-card .info{padding:8px 12px}
-.recent-card .title{font-family:var(--font-display);font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.recent-card .meta{font-size:11px;color:var(--color-muted);margin-top:2px}
-.home-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);padding:0 var(--space-lg);margin-bottom:var(--space-xl)}
-.home-action{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:var(--radius-md);background:#FFF;border:1px solid var(--color-border);cursor:pointer;box-shadow:var(--shadow-card)}
-.home-action:active{background:var(--color-surface)}
-.home-action span{font-size:11px;color:var(--color-subtle);font-weight:500}
+.greeting{padding:0 16px}
+.greeting h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)}
+.greeting p{font-size:13px;color:var(--color-subtle);margin-top:4px}
+.stat-row{display:flex;gap:8px;padding:0 16px;margin:16px 0}
+.stat-item{flex:1;background:#FFF;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.stat-item .num{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--color-primary)}
+.stat-item.accent .num{color:var(--color-accent)}
+.stat-item .lbl{font-size:11px;color:var(--color-muted);margin-top:4px}
+.scroll-row{display:flex;gap:12px;overflow-x:auto;padding:0 16px;margin-bottom:24px;scrollbar-width:none}
+.scroll-row::-webkit-scrollbar{display:none}
+.h-card{flex-shrink:0;width:140px;background:#FFF;border-radius:var(--radius-md);box-shadow:var(--shadow-card);border:1px solid var(--color-border);overflow:hidden;cursor:pointer}
+.h-card:active{transform:scale(0.97)}
+.h-card .thumb{width:100%;height:100px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:28px;color:var(--color-accent)}
+.h-card .info{padding:8px 12px}
+.h-card .title{font-family:var(--font-display);font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h-card .meta{font-size:11px;color:var(--color-muted);margin-top:2px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px;margin-bottom:24px}
+.g4-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:var(--radius-md);background:#FFF;border:1px solid var(--color-border);cursor:pointer;box-shadow:var(--shadow-card)}
+.g4-item:active{background:var(--color-surface)}
+.g4-item span{font-size:11px;color:var(--color-subtle);font-weight:500}
 
 /* Detail */
-.detail-hero{width:100%;height:280px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:64px;color:var(--color-accent)}
-.detail-body{padding:var(--space-lg);flex:1}
-.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-lg)}
-.detail-header h2{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.3}
-.detail-fav{width:40px;height:40px;border-radius:50%;background:var(--color-accent-tint);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:1px solid var(--color-accent)}
-.detail-fav.liked{background:var(--color-danger);border-color:var(--color-danger)}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)}
-.detail-item{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-md);border:1px solid var(--color-border)}
-.detail-item .label{font-size:11px;color:var(--color-muted);margin-bottom:4px}
-.detail-item .value{font-size:14px;font-weight:600;font-family:var(--font-display)}
-.detail-desc,.detail-price{background:#FFF;border-radius:var(--radius-md);padding:var(--space-lg);box-shadow:var(--shadow-card);border:1px solid var(--color-border);margin-bottom:var(--space-xl)}
-.detail-desc h3,.detail-price h3{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--color-primary);margin-bottom:var(--space-sm)}
-.detail-desc p{font-size:13px;line-height:1.7;color:var(--color-subtle)}
-.price-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
-.price-row+.price-row{border-top:1px solid var(--color-border)}
-.price-source{font-size:13px;color:var(--color-subtle)}
-.price-value{font-size:15px;font-weight:700;color:var(--color-danger);font-family:var(--font-display)}
+.d-hero{width:100%;height:280px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:64px;color:var(--color-accent)}
+.d-body{padding:16px;flex:1}
+.d-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.d-hdr h2{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.3;flex:1}
+.d-fav{width:40px;height:40px;border-radius:50%;background:var(--color-accent-tint);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:1px solid var(--color-accent);margin-left:12px;font-size:18px}
+.d-fav.liked{background:var(--color-danger);border-color:var(--color-danger);color:#FFF}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.d-item{background:var(--color-surface);border-radius:var(--radius-md);padding:12px;border:1px solid var(--color-border)}
+.d-item .lbl{font-size:11px;color:var(--color-muted);margin-bottom:4px}
+.d-item .val{font-size:14px;font-weight:600;font-family:var(--font-display)}
+.d-box{background:#FFF;border-radius:var(--radius-md);padding:16px;box-shadow:var(--shadow-card);border:1px solid var(--color-border);margin-bottom:24px}
+.d-box h3{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--color-primary);margin-bottom:12px}
+.d-box p{font-size:13px;line-height:1.7;color:var(--color-subtle)}
+.pr-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.pr-row+.pr-row{border-top:1px solid var(--color-border)}
+.pr-src{font-size:13px;color:var(--color-subtle)}
+.pr-val{font-size:15px;font-weight:700;color:var(--color-danger);font-family:var(--font-display)}
 
-/* Install Banner */
-.install-banner{display:none;position:fixed;top:0;left:0;right:0;max-width:390px;margin:0 auto;background:var(--color-primary);color:#FFF;padding:12px var(--space-lg);z-index:400;align-items:center;gap:var(--space-md)}
-.install-banner.show{display:flex}
-.install-banner .app-icon{width:40px;height:40px;border-radius:10px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0}
-.install-banner .app-info{flex:1}
-.install-banner .app-name{font-size:14px;font-weight:600}
-.install-banner .app-hint{font-size:11px;opacity:0.7}
-.install-banner .install-btn{padding:6px 16px;border-radius:var(--radius-pill);background:#FFF;color:var(--color-primary);font-size:13px;font-weight:600;border:none;cursor:pointer}
+/* Search */
+.s-bar{padding:8px 16px;position:sticky;top:0;z-index:20;background:var(--color-bg)}
+.s-bar input{width:100%;padding:10px 16px 10px 38px;border-radius:var(--radius-pill);border:1px solid var(--color-border);background:#FFF;font-size:14px;outline:none;box-shadow:var(--shadow-card)}
+.flt-row{display:flex;gap:8px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.flt{padding:6px 14px;border-radius:var(--radius-pill);background:#FFF;border:1px solid var(--color-border);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--color-subtle)}
+.flt.active{background:var(--color-primary);color:#FFF;border-color:var(--color-primary)}
 
-/* Search & Filter */
-.search-bar{padding:var(--space-sm) var(--space-lg);position:sticky;top:0;z-index:20;background:var(--color-bg)}
-.search-bar input{width:100%;padding:10px 16px 10px 38px;border-radius:var(--radius-pill);border:1px solid var(--color-border);background:#FFF;font-size:14px;outline:none;box-shadow:var(--shadow-card)}
-.filter-bar{display:flex;gap:8px;padding:var(--space-sm) var(--space-lg);overflow-x:auto;scrollbar-width:none}
-.filter-chip{padding:6px 14px;border-radius:var(--radius-pill);background:#FFF;border:1px solid var(--color-border);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--color-subtle)}
-.filter-chip.active{background:var(--color-primary);color:#FFF;border-color:var(--color-primary)}
-
-/* Stamp Grid */
-.stamp-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);padding:0 var(--space-lg) var(--space-xl)}
-.stamp-card{cursor:pointer}
-.stamp-card .thumb{width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:32px;color:var(--color-accent);border-radius:var(--radius-md) var(--radius-md) 0 0}
-.stamp-card .info{background:#FFF;padding:8px 12px;border-radius:0 0 var(--radius-md) var(--radius-md);border:1px solid var(--color-border);border-top:none}
-.stamp-card .name{font-family:var(--font-display);font-size:13px;font-weight:600}
-.stamp-card .price{font-size:12px;color:var(--color-danger);font-weight:600;margin-top:2px}
+/* Grid */
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 24px}
+.s-card{cursor:pointer}
+.s-card .th{width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--color-surface);font-family:var(--font-display);font-size:32px;color:var(--color-accent);border-radius:var(--radius-md) var(--radius-md) 0 0}
+.s-card .inf{background:#FFF;padding:8px 12px;border-radius:0 0 var(--radius-md) var(--radius-md);border:1px solid var(--color-border);border-top:none}
+.s-card .nm{font-family:var(--font-display);font-size:13px;font-weight:600}
+.s-card .pr{font-size:12px;color:var(--color-danger);font-weight:600;margin-top:2px}
 
 /* Form */
-.form-page{padding:var(--space-lg)}
-.form-page label{display:block;font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:4px}
-.form-page input,.form-page select,.form-page textarea{width:100%;padding:10px 12px;border-radius:var(--radius-md);border:1px solid var(--color-border);background:#FFF;font-size:14px;margin-bottom:16px;outline:none;font-family:var(--font-body)}
-.form-page textarea{height:80px;resize:vertical}
-.btn-primary{width:100%;padding:14px;border-radius:var(--radius-md);background:var(--color-primary);color:#FFF;font-size:16px;font-weight:600;border:none;cursor:pointer}
-.btn-primary:active{opacity:0.85}
+.frm{padding:16px}
+.frm label{display:block;font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:4px}
+.frm input,.frm select,.frm textarea{width:100%;padding:10px 12px;border-radius:var(--radius-md);border:1px solid var(--color-border);background:#FFF;font-size:14px;margin-bottom:16px;outline:none;font-family:var(--font-body)}
+.frm textarea{height:80px;resize:vertical}
+.btn-pri{width:100%;padding:14px;border-radius:var(--radius-md);background:var(--color-primary);color:#FFF;font-size:16px;font-weight:600;border:none;cursor:pointer}
+.btn-pri:active{opacity:0.85}
 
 /* Profile */
-.profile-header{text-align:center;padding:var(--space-2xl) var(--space-lg)}
-.profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-md);font-family:var(--font-display);font-size:28px;color:#FFF}
-.profile-name{font-family:var(--font-display);font-size:18px;font-weight:700}
-.profile-email{font-size:12px;color:var(--color-subtle);margin-top:4px}
-.profile-stats{display:flex;gap:var(--space-sm);padding:0 var(--space-lg);margin-bottom:var(--space-xl)}
-.profile-stat{flex:1;text-align:center;background:#FFF;border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
-.profile-stat .num{font-size:20px;font-weight:700;font-family:var(--font-display);color:var(--color-primary)}
-.profile-stat .label{font-size:11px;color:var(--color-muted);margin-top:2px}
-.profile-menu{padding:0 var(--space-lg)}
-.menu-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#FFF;border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
-.menu-item:active{background:var(--color-surface)}
-.menu-item .menu-text{font-size:14px;font-weight:500}
-.menu-item .menu-arrow{color:var(--color-muted);font-size:18px}
+.p-hdr{text-align:center;padding:32px 16px}
+.p-av{width:72px;height:72px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-family:var(--font-display);font-size:28px;color:#FFF}
+.p-nm{font-family:var(--font-display);font-size:18px;font-weight:700}
+.p-em{font-size:12px;color:var(--color-subtle);margin-top:4px}
+.p-st{display:flex;gap:8px;padding:0 16px;margin-bottom:24px}
+.p-st-item{flex:1;text-align:center;background:#FFF;border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.p-st-item .n{font-size:20px;font-weight:700;font-family:var(--font-display);color:var(--color-primary)}
+.p-st-item .l{font-size:11px;color:var(--color-muted);margin-top:2px}
+.p-menu{padding:0 16px}
+.p-menu-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#FFF;border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.p-menu-item:active{background:var(--color-surface)}
+.p-menu-item .t{font-size:14px;font-weight:500}
+.p-menu-item .a{color:var(--color-muted);font-size:18px}
+
+/* Backup */
+.b-stats{display:flex;gap:8px;padding:0 16px;margin:16px 0}
+.b-stat{flex:1;background:#FFF;border-radius:var(--radius-md);padding:16px;text-align:center;box-shadow:var(--shadow-card);border:1px solid var(--color-border)}
+.b-stat .n{font-size:24px;font-weight:700;font-family:var(--font-display);color:var(--color-primary)}
+.b-stat .l{font-size:11px;color:var(--color-muted);margin-top:4px}
+.b-section{padding:0 16px;margin-bottom:16px}
+.b-card{background:#FFF;border-radius:var(--radius-md);padding:16px;box-shadow:var(--shadow-card);border:1px solid var(--color-border);margin-bottom:12px}
+.b-card h3{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--color-primary);margin-bottom:8px}
+.b-card .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;color:var(--color-subtle)}
+.b-card .row .val{color:var(--color-ink);font-weight:500}
+.b-btn{width:100%;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-primary);background:transparent;color:var(--color-primary);font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+.b-btn.pri{background:var(--color-primary);color:#FFF}
 
 /* Toast */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--color-ink);color:#FFF;padding:10px 20px;border-radius:var(--radius-pill);font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
 .toast.show{opacity:1}
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--color-muted)}
+.empty .ic{font-size:48px;margin-bottom:12px}
+.empty p{font-size:14px}
 
-/* Empty */
-.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--color-muted)}
-.empty-state .icon{font-size:48px;margin-bottom:12px}
-.empty-state p{font-size:14px}
+/* Install Banner */
+.install-banner{display:none;position:fixed;top:0;left:0;right:0;max-width:390px;margin:0 auto;background:var(--color-primary);color:#FFF;padding:12px 16px;z-index:400;align-items:center;gap:12px}
+.install-banner.show{display:flex}
+.install-banner .ai{width:40px;height:40px;border-radius:10px;background:var(--color-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0}
+.install-banner .aii{flex:1}
+.install-banner .an{font-size:14px;font-weight:600}
+.install-banner .ah{font-size:11px;opacity:0.7}
+.install-banner .ib{padding:6px 16px;border-radius:var(--radius-pill);background:#FFF;color:var(--color-primary);font-size:13px;font-weight:600;border:none;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- Install Banner -->
-<div class="install-banner" id="install-banner">
-  <div class="app-icon">邮</div>
-  <div class="app-info"><div class="app-name">邮藏集</div><div class="app-hint">添加到主屏幕，像 App 一样使用</div></div>
-  <button class="install-btn" id="install-btn">安装</button>
+<div class="install-banner" id="ib">
+  <div class="ai">邮</div>
+  <div class="aii"><div class="an">邮藏集</div><div class="ah">添加到主屏幕，像 App 一样使用</div></div>
+  <button class="ib" id="ibtn">安装</button>
 </div>
 
 <!-- ===== HOME ===== -->
-<div class="page active" id="page-home">
-  <div style="padding:20px 16px 0">
-    <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-primary)">邮藏集</h1>
-    <p style="font-size:13px;color:var(--color-subtle);margin-top:4px">发现 · 收藏 · 管理您的邮票</p>
+<div class="page active" id="p-home">
+  <div class="greeting" style="padding-top:20px">
+    <h1>我的产品</h1>
+    <p>邮藏集 · 共 128 件藏品</p>
   </div>
-  <div class="home-stats">
-    <div class="home-stat"><div class="num" id="stat-total">8</div><div class="label">藏品总数</div></div>
-    <div class="home-stat accent"><div class="num" id="stat-fav">4</div><div class="label">已收藏</div></div>
-    <div class="home-stat"><div class="num" id="stat-value">218</div><div class="label">估值(万)</div></div>
+  <div class="stat-row">
+    <div class="stat-item"><div class="num" id="s-total">8</div><div class="lbl">藏品总数</div></div>
+    <div class="stat-item accent"><div class="num">12</div><div class="lbl">本月新增</div></div>
+    <div class="stat-item"><div class="num" id="s-fav">4</div><div class="lbl">已收藏</div></div>
   </div>
-  <div class="px-lg" style="margin-bottom:12px"><div class="section-title">最近浏览</div></div>
-  <div class="home-recent" id="recent-list"></div>
-  <div class="px-lg" style="margin-bottom:12px"><div class="section-title">快捷操作</div></div>
-  <div class="home-actions">
-    <div class="home-action" onclick="showPage('page-market')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      <span>邮票市场</span>
-    </div>
-    <div class="home-action" onclick="showPage('page-add')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-      <span>录入藏品</span>
-    </div>
-    <div class="home-action" onclick="showPage('page-fav')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-      <span>我的收藏</span>
-    </div>
-    <div class="home-action" onclick="showPage('page-profile')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-      <span>个人中心</span>
-    </div>
+  <div class="px"><div class="section-title">最近浏览</div></div>
+  <div class="scroll-row" id="recent-list"></div>
+  <div class="px"><div class="section-title">快捷操作</div></div>
+  <div class="grid-4">
+    <div class="g4-item" onclick="showPage('p-search')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>商品搜索</span></div>
+    <div class="g4-item" onclick="showPage('p-detail');loadDetail('s1')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 12h8"/></svg><span>商品详情</span></div>
+    <div class="g4-item" onclick="showPage('p-add')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>录入藏品</span></div>
+    <div class="g4-item" onclick="showPage('p-backup')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.8"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"/><circle cx="12" cy="11" r="3"/></svg><span>数据备份</span></div>
   </div>
-  <div class="px-lg"><div class="section-title">拍卖动态</div></div>
-  <div class="home-recent" id="auction-list" style="margin-bottom:32px"></div>
+  <div class="px"><div class="section-title">拍卖动态</div></div>
+  <div class="scroll-row" id="auc-list" style="margin-bottom:32px"></div>
 </div>
 
-<!-- ===== MARKET ===== -->
-<div class="page" id="page-market">
-  <div class="top-bar"><h1>邮票市场</h1><div style="width:36px"></div></div>
-  <div class="search-bar"><input id="market-search" placeholder="搜索邮票名称、年代…" oninput="filterMarket()"></div>
-  <div class="filter-bar" id="filter-bar">
-    <span class="filter-chip active" data-cat="all" onclick="setFilter(this)">全部</span>
-    <span class="filter-chip" data-cat="清代" onclick="setFilter(this)">清代</span>
-    <span class="filter-chip" data-cat="民国" onclick="setFilter(this)">民国</span>
-    <span class="filter-chip" data-cat="新中国" onclick="setFilter(this)">新中国</span>
-    <span class="filter-chip" data-cat="外国" onclick="setFilter(this)">外国</span>
+<!-- ===== SEARCH ===== -->
+<div class="page" id="p-search">
+  <div class="top-bar"><h1>商品搜索</h1><div style="width:36px"></div></div>
+  <div class="s-bar"><input id="search-input" placeholder="搜索邮票名称、年代…" oninput="doSearch()"></div>
+  <div class="flt-row" id="flt-row">
+    <span class="flt active" data-cat="all" onclick="setFlt(this)">全部</span>
+    <span class="flt" data-cat="清代" onclick="setFlt(this)">清代</span>
+    <span class="flt" data-cat="民国" onclick="setFlt(this)">民国</span>
+    <span class="flt" data-cat="新中国" onclick="setFlt(this)">新中国</span>
   </div>
-  <div class="stamp-grid" id="market-grid"></div>
+  <div class="s-grid" id="search-grid"></div>
 </div>
 
 <!-- ===== FAVORITES ===== -->
-<div class="page" id="page-fav">
+<div class="page" id="p-fav">
   <div class="top-bar"><h1>我的收藏</h1><div style="width:36px"></div></div>
-  <div class="stamp-grid" id="fav-grid"></div>
+  <div class="s-grid" id="fav-grid"></div>
 </div>
 
 <!-- ===== PROFILE ===== -->
-<div class="page" id="page-profile">
+<div class="page" id="p-profile">
   <div class="top-bar"><h1>我的</h1><div style="width:36px"></div></div>
-  <div class="profile-header">
-    <div class="profile-avatar">邮</div>
-    <div class="profile-name">集邮爱好者</div>
-    <div class="profile-email">stamp@youcangji.app</div>
+  <div class="p-hdr">
+    <div class="p-av">邮</div>
+    <div class="p-nm">集邮爱好者</div>
+    <div class="p-em">stamp@youcangji.app</div>
   </div>
-  <div class="profile-stats">
-    <div class="profile-stat"><div class="num">8</div><div class="label">藏品</div></div>
-    <div class="profile-stat"><div class="num">4</div><div class="label">收藏</div></div>
-    <div class="profile-stat"><div class="num">6</div><div class="label">关注</div></div>
+  <div class="p-st">
+    <div class="p-st-item"><div class="n">8</div><div class="l">藏品</div></div>
+    <div class="p-st-item"><div class="n">4</div><div class="l">收藏</div></div>
+    <div class="p-st-item"><div class="n">12</div><div class="l">关注</div></div>
   </div>
-  <div class="profile-menu">
-    <div class="menu-item"><span class="menu-text">我的帖子</span><span class="menu-arrow">›</span></div>
-    <div class="menu-item"><span class="menu-text">浏览记录</span><span class="menu-arrow">›</span></div>
-    <div class="menu-item"><span class="menu-text">数据备份</span><span class="menu-arrow">›</span></div>
-    <div class="menu-item"><span class="menu-text">关于我们</span><span class="menu-arrow">›</span></div>
+  <div class="p-menu">
+    <div class="p-menu-item"><span class="t">我的帖子</span><span class="a">›</span></div>
+    <div class="p-menu-item"><span class="t">浏览记录</span><span class="a">›</span></div>
+    <div class="p-menu-item"><span class="t">数据备份</span><span class="a">›</span></div>
+    <div class="p-menu-item"><span class="t">关于我们</span><span class="a">›</span></div>
   </div>
 </div>
 
 <!-- ===== DETAIL ===== -->
-<div class="page" id="page-detail">
+<div class="page" id="p-detail">
   <div class="top-bar">
-    <button class="back-btn" onclick="showPage('page-home')">‹</button>
-    <h1>藏品详情</h1><div style="width:36px"></div>
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h1>商品详情</h1><div style="width:36px"></div>
   </div>
-  <div class="detail-hero" id="detail-hero">邮</div>
-  <div class="detail-body">
-    <div class="detail-header">
-      <h2 id="detail-title"></h2>
-      <div class="detail-fav" id="detail-fav-btn" onclick="toggleFav()">♡</div>
+  <div class="d-hero" id="d-hero">邮</div>
+  <div class="d-body">
+    <div class="d-hdr">
+      <h2 id="d-title"></h2>
+      <div class="d-fav" id="d-fav" onclick="toggleDFav()">♡</div>
     </div>
-    <div class="detail-grid" id="detail-grid"></div>
-    <div class="detail-desc" id="detail-desc"></div>
-    <div class="detail-price" id="detail-price"></div>
+    <div class="d-grid" id="d-grid"></div>
+    <div class="d-box" id="d-desc"></div>
+    <div class="d-box" id="d-price"></div>
+    <div class="px" style="padding-left:0;margin-bottom:16px"><div class="section-title">相关产品</div></div>
+    <div class="scroll-row" id="d-related"></div>
   </div>
 </div>
 
 <!-- ===== ADD ===== -->
-<div class="page" id="page-add">
+<div class="page" id="p-add">
   <div class="top-bar">
-    <button class="back-btn" onclick="showPage('page-home')">‹</button>
+    <button class="back-btn" onclick="goHome()">‹</button>
     <h1>录入藏品</h1><div style="width:36px"></div>
   </div>
-  <div class="form-page">
-    <form id="add-form" onsubmit="handleAdd(event)">
-      <label>藏品名称 *</label>
-      <input id="add-name" placeholder="请输入邮票名称" required>
-      <label>年代</label>
-      <select id="add-dyn"><option>清代</option><option>民国</option><option>新中国</option><option>解放区</option><option>外国</option></select>
-      <label>发行年份</label>
-      <input id="add-year" placeholder="如 1897">
-      <label>面值</label>
-      <input id="add-face" placeholder="如 壹角银">
-      <label>备注</label>
-      <textarea id="add-desc" placeholder="藏品描述、品相、来源…"></textarea>
-      <button type="submit" class="btn-primary">确认录入</button>
-    </form>
+  <div style="padding:16px;text-align:center">
+    <div style="width:100%;height:160px;background:var(--color-surface);border-radius:var(--radius-md);display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:16px;border:2px dashed var(--color-border);color:var(--color-muted);font-size:13px;gap:8px">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>上传藏品图片</span>
+      <span style="font-size:11px">支持 AI 自动识别藏品信息</span>
+    </div>
+  </div>
+  <form class="frm" onsubmit="handleAdd(event)">
+    <label>藏品名称 *</label>
+    <input id="add-name" placeholder="请输入邮票名称" required>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>年代</label><input id="add-dyn" placeholder="如 清代"></div>
+      <div><label>年份</label><input id="add-year" placeholder="如 1878"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>面值</label><input id="add-face" placeholder="如 壹分银"></div>
+      <div><label>版别</label><input id="add-cat" placeholder="如 经典"></div>
+    </div>
+    <label>备注</label>
+    <textarea id="add-desc" placeholder="藏品描述、品相、来源…"></textarea>
+    <button type="submit" class="btn-pri">确认录入</button>
+  </form>
+</div>
+
+<!-- ===== BACKUP ===== -->
+<div class="page" id="p-backup">
+  <div class="top-bar"><h1>迁入迁出备查</h1><div style="width:36px"></div></div>
+  <div class="b-stats">
+    <div class="b-stat"><div class="n">128</div><div class="l">藏品</div></div>
+    <div class="b-stat"><div class="n">256</div><div class="l">图片</div></div>
+    <div class="b-stat"><div class="n">42</div><div class="l">MB</div></div>
+  </div>
+  <div class="b-section">
+    <div class="b-card">
+      <h3>云端备份</h3>
+      <div class="row"><span>上次备份</span><span class="val">2025-01-15 14:30</span></div>
+      <div class="row"><span>备份到移动端</span><span class="val">42 MB</span></div>
+      <button class="b-btn pri">立即备份</button>
+    </div>
+    <div class="b-card">
+      <h3>自动备份</h3>
+      <div class="row"><span>每日自动备份</span><span class="val">已开启</span></div>
+      <div class="row"><span>仅 Wi-Fi 下备份</span><span class="val">是</span></div>
+      <button class="b-btn">设置</button>
+    </div>
+    <div class="b-card">
+      <h3>备份历史</h3>
+      <div class="row"><span>2025-01-15 14:30</span><span class="val">42 MB</span></div>
+      <div class="row"><span>2025-01-08 09:15</span><span class="val">41 MB</span></div>
+      <button class="b-btn">查看全部</button>
+    </div>
   </div>
 </div>
 
 <!-- ===== NAV ===== -->
 <nav class="bottom-nav">
-  <button class="nav-item active" data-page="page-home" onclick="navigate('page-home',this)">
+  <button class="nav-item active" data-page="p-home" onclick="nav('p-home',this)">
     <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
     <span>首页</span>
   </button>
-  <button class="nav-item" data-page="page-market" onclick="navigate('page-market',this)">
-    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-    <span>市场</span>
+  <button class="nav-item" data-page="p-search" onclick="nav('p-search',this)">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <span>分类</span>
   </button>
-  <button class="nav-item" data-page="page-fav" onclick="navigate('page-fav',this)">
+  <button class="nav-item" data-page="p-fav" onclick="nav('p-fav',this)">
     <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     <span>收藏</span>
   </button>
-  <button class="nav-item" data-page="page-profile" onclick="navigate('page-profile',this)">
+  <button class="nav-item" data-page="p-profile" onclick="nav('p-profile',this)">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
     <span>我的</span>
   </button>
@@ -298,125 +315,86 @@ body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-i
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== DATA =====
 const STAMPS = [
   {id:'s1',name:'大龙薄纸壹分银',dyn:'清代',year:'1878',face:'壹分银',cat:'经典',desc:'大龙邮票是中国第一套邮票，薄纸版壹分银为早期版本。图案为云龙戏珠，寓意吉祥，是中国邮政史的起点。',prices:[{s:'SPINK 2024',v:'HK$38,000'},{s:'华夏拍卖',v:'¥28,750'}]},
-  {id:'s2',name:'清代红印花小字当壹圆',dyn:'清代',year:'1897',face:'壹角银',cat:'经典',desc:'红印花加盖小字当壹圆是中国清代邮政珍邮之一，原票为红印花税票，加盖小字"当壹圆"后作为邮票使用。',prices:[{s:'中国嘉德',v:'¥287,500'},{s:'赵涌在线',v:'¥253,000'}]},
-  {id:'s3',name:'民国孙中山像贰圆',dyn:'民国',year:'1931',face:'贰圆',cat:'民国',desc:'伦敦版孙中山像邮票，由英国伦敦德纳罗公司雕刻印刷。线条细腻，印刷精良。',prices:[{s:'赵涌在线',v:'¥6,900'}]},
+  {id:'s2',name:'红印花小字当壹圆',dyn:'清代',year:'1897',face:'壹角银',cat:'经典',desc:'红印花加盖小字当壹圆是中国清代邮政珍邮之一，原票为红印花税票，加盖小字"当壹圆"后作为邮票使用。',prices:[{s:'中国嘉德',v:'¥287,500'},{s:'赵涌在线',v:'¥253,000'}]},
+  {id:'s3',name:'孙中山像贰圆',dyn:'民国',year:'1931',face:'贰圆',cat:'民国',desc:'伦敦版孙中山像邮票，由英国伦敦德纳罗公司雕刻印刷。线条细腻，印刷精良。',prices:[{s:'赵涌在线',v:'¥6,900'}]},
   {id:'s4',name:'梅兰芳舞台艺术M',dyn:'新中国',year:'1962',face:'8分+50分',cat:'纪特',desc:'梅兰芳舞台艺术小型张，纪94M。新中国第一枚小型张，JT票之王。',prices:[{s:'中国嘉德',v:'¥218,500'},{s:'诚轩',v:'¥195,500'}]},
   {id:'s5',name:'全国山河一片红',dyn:'新中国',year:'1968',face:'8分',cat:'文革',desc:'新中国最著名的珍邮之一，因地图问题被紧急撤销，少量流出。',prices:[{s:'中国嘉德',v:'¥1,035,000'},{s:'SPINK',v:'HK$1,200,000'}]},
   {id:'s6',name:'庚申年猴票',dyn:'新中国',year:'1980',face:'8分',cat:'生肖',desc:'T46庚申年猴票，黄永玉设计，中国第一枚生肖邮票。',prices:[{s:'赵涌在线',v:'¥12,650'}]},
-  {id:'s7',name:'上海书信馆实寄封',dyn:'清代',year:'1902',face:'实寄封',cat:'经典',desc:'上海工部局书信馆实寄封，加盖改值，珍稀的邮政历史实物。',prices:[{s:'SPINK',v:'HK$22,000'}]},
+  {id:'s7',name:'上海书信馆实寄封',dyn:'清代',year:'1902',face:'实寄封',cat:'经典',desc:'上海工部局书信馆实寄封，珍稀的邮政历史实物。',prices:[{s:'SPINK',v:'HK$22,000'}]},
   {id:'s8',name:'慈禧寿辰纪念票',dyn:'清代',year:'1894',face:'贰分',cat:'经典',desc:'慈禧太后六十寿辰纪念邮票，中国第一套纪念邮票。',prices:[{s:'SPINK',v:'HK$15,000'}]},
 ];
 let FAVS = ['s1','s4','s5','s6'];
-let currentDetail = null;
+let CD = null;
 
-function showPage(id){$$('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function $(s){return document.querySelector(s)}
-function $$(s){return[...document.querySelectorAll(s)]}
-
-function navigate(id,el){showPage(id);$$('.nav-item').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active')}
-
+function goHome(){nav('p-home',document.querySelector('[data-page=p-home]'))}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function nav(id,el){showPage(id);document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000)}
 
-function toggleFav(){
-  if(!currentDetail)return;
-  const i=FAVS.indexOf(currentDetail.id);
-  if(i>=0)FAVS.splice(i,1);else FAVS.push(currentDetail.id);
-  updateFavBtn();renderFavGrid();renderRecent()
+function toggleDFav(){
+  if(!CD)return;const i=FAVS.indexOf(CD.id);i>=0?FAVS.splice(i,1):FAVS.push(CD.id);
+  updateFavUI();renderFavGrid();updateStats()
 }
-function updateFavBtn(){
-  const btn=document.getElementById('detail-fav-btn');
-  if(!currentDetail)return;
-  btn.textContent=FAVS.includes(currentDetail.id)?'❤':'♡';
-  btn.classList.toggle('liked',FAVS.includes(currentDetail.id))
+function updateFavUI(){
+  const b=document.getElementById('d-fav');if(!CD)return;
+  b.textContent=FAVS.includes(CD.id)?'❤':'♡';b.classList.toggle('liked',FAVS.includes(CD.id))
 }
 
-function showDetail(id){
-  const s=STAMPS.find(x=>x.id===id);if(!s)return;
-  currentDetail=s;showPage('page-detail');
-  document.getElementById('detail-hero').textContent='邮';
-  document.getElementById('detail-title').textContent=s.name;
-  updateFavBtn();
-  document.getElementById('detail-grid').innerHTML=
-    `<div class="detail-item"><div class="label">年代</div><div class="value">${s.dyn}</div></div>
-     <div class="detail-item"><div class="label">发行年份</div><div class="value">${s.year}</div></div>
-     <div class="detail-item"><div class="label">面值</div><div class="value">${s.face}</div></div>
-     <div class="detail-item"><div class="label">分类</div><div class="value">${s.cat}</div></div>`;
-  document.getElementById('detail-desc').innerHTML=`<h3>藏品介绍</h3><p>${s.desc}</p>`;
-  document.getElementById('detail-price').innerHTML=
-    `<h3>参考价格</h3>${s.prices.map(p=>`<div class="price-row"><span class="price-source">${p.s}</span><span class="price-value">${p.v}</span></div>`).join('')}`;
+function loadDetail(id){
+  const s=STAMPS.find(x=>x.id===id);if(!s)return;CD=s;showPage('p-detail');
+  document.getElementById('d-title').textContent=s.name;updateFavUI();
+  document.getElementById('d-grid').innerHTML=
+    `<div class=\"d-item\"><div class=\"lbl\">志号</div><div class=\"val\">C.1</div></div><div class=\"d-item\"><div class=\"lbl\">发行年份</div><div class=\"val\">${s.year}</div></div><div class=\"d-item\"><div class=\"lbl\">面值</div><div class=\"val\">${s.face}</div></div><div class=\"d-item\"><div class=\"lbl\">版别</div><div class=\"val\">${s.cat}</div></div><div class=\"d-item\"><div class=\"lbl\">存量</div><div class=\"val\">约100枚</div></div><div class=\"d-item\"><div class=\"lbl\">著录</div><div class=\"val\">《中国邮票史》</div></div>`;
+  document.getElementById('d-desc').innerHTML=`<h3>藏品介绍</h3><p>${s.desc}</p>`;
+  document.getElementById('d-price').innerHTML=`<h3>参考价格</h3>${s.prices.map(p=>`<div class=\"pr-row\"><span class=\"pr-src\">${p.s}</span><span class=\"pr-val\">${p.v}</span></div>`).join('')}`;
+  const related=STAMPS.filter(x=>x.id!==id).slice(0,4);
+  document.getElementById('d-related').innerHTML=related.map(x=>`
+    <div class=\"h-card\" onclick=\"loadDetail('${x.id}')\"><div class=\"thumb\">邮</div><div class=\"info\"><div class=\"title\">${x.name}</div><div class=\"meta\">${x.dyn} · ${x.year}</div></div></div>
+  `).join('')
 }
 
 function renderRecent(){
   const c=document.getElementById('recent-list');
   c.innerHTML=STAMPS.slice(0,4).map(s=>`
-    <div class="recent-card" onclick="showDetail('${s.id}')">
-      <div class="thumb">邮</div>
-      <div class="info"><div class="title">${s.name}</div><div class="meta">${s.dyn} · ${s.year}</div></div>
-    </div>`).join('')
+    <div class=\"h-card\" onclick=\"loadDetail('${s.id}')\"><div class=\"thumb\">邮</div><div class=\"info\"><div class=\"title\">${s.name}</div><div class=\"meta\">${s.dyn} · ${s.year}</div></div></div>
+  `).join('')
 }
-
 function renderFavGrid(){
-  const c=document.getElementById('fav-grid');
-  const list=STAMPS.filter(s=>FAVS.includes(s.id));
+  const c=document.getElementById('fav-grid');const list=STAMPS.filter(s=>FAVS.includes(s.id));
   c.innerHTML=list.length?list.map(s=>`
-    <div class="stamp-card" onclick="showDetail('${s.id}')">
-      <div class="thumb">邮</div>
-      <div class="info"><div class="name">${s.name}</div><div class="price">${s.prices[0].v}</div></div>
-    </div>`).join(''):'<div class="empty-state"><div class="icon">📭</div><p>还没有收藏的邮票</p></div>'
+    <div class=\"s-card\" onclick=\"loadDetail('${s.id}')\"><div class=\"th\">邮</div><div class=\"inf\"><div class=\"nm\">${s.name}</div><div class=\"pr\">${s.prices[0].v}</div></div></div>
+  `).join(''):'<div class="empty"><div class="ic">📭</div><p>还没有收藏的邮票</p></div>'
 }
-
-function loadMarket(filter='all',query=''){
-  const c=document.getElementById('market-grid');
-  let list=filter==='all'?STAMPS:STAMPS.filter(s=>s.dyn===filter);
-  if(query)list=list.filter(s=>s.name.includes(query)||s.dyn.includes(query));
-  c.innerHTML=list.length?list.map(s=>`
-    <div class="stamp-card" onclick="showDetail('${s.id}')">
-      <div class="thumb">邮</div>
-      <div class="info"><div class="name">${s.name}</div><div class="price">${s.prices[0].v}</div></div>
-    </div>`).join(''):'<div class="empty-state"><div class="icon">🔍</div><p>没有匹配的藏品</p></div>'
+function renderAuc(){
+  const c=document.getElementById('auc-list');
+  c.innerHTML=[
+    {s:'中国嘉德',t:'2024秋季拍卖会',i:'全国山河一片红',p:'¥1,035,000'},
+    {s:'SPINK',t:'香港邮票专场',i:'红印花小字当壹圆',p:'HK$420,000'},
+    {s:'赵涌在线',t:'2024年11月场',i:'梅兰芳小型张',p:'¥201,250'},
+  ].map(i=>`<div class=\"h-card\" style=\"width:160px\"><div class=\"info\" style=\"padding:12px\"><div style=\"font-size:11px;color:var(--color-accent);font-weight:600\">${i.s}</div><div style=\"font-size:13px;font-weight:600;margin:4px 0\">${i.t}</div><div style=\"font-size:11px;color:var(--color-muted)\">${i.i}</div><div style=\"font-size:14px;color:var(--color-danger);font-weight:700;margin-top:4px\">${i.p}</div></div></div>`).join('')
 }
-function setFilter(el){$$('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');loadMarket(el.dataset.cat,document.getElementById('market-search').value)}
-function filterMarket(){const q=document.getElementById('market-search').value;const a=document.querySelector('.filter-chip.active');loadMarket(a?a.dataset.cat:'all',q)}
-
-function renderAuction(){
-  const c=document.getElementById('auction-list');
-  const items=[
-    {src:'中国嘉德',title:'2024秋季拍卖会',item:'全国山河一片红',price:'¥1,035,000'},
-    {src:'SPINK',title:'香港邮票专场',item:'红印花小字当壹圆',price:'HK$420,000'},
-    {src:'赵涌在线',title:'2024年11月场',item:'梅兰芳小型张',price:'¥201,250'},
-  ];
-  c.innerHTML=items.map(i=>`
-    <div class="recent-card" style="width:160px">
-      <div class="info" style="padding:12px">
-        <div style="font-size:11px;color:var(--color-accent);font-weight:600">${i.src}</div>
-        <div style="font-size:13px;font-weight:600;margin:4px 0">${i.title}</div>
-        <div style="font-size:11px;color:var(--color-muted)">${i.item}</div>
-        <div style="font-size:14px;color:var(--color-danger);font-weight:700;margin-top:4px">${i.price}</div>
-      </div>
-    </div>`).join('')
+function updateStats(){
+  document.getElementById('s-total').textContent=STAMPS.length;
+  document.getElementById('s-fav').textContent=FAVS.length
 }
-
-function handleAdd(e){
-  e.preventDefault();
-  const n=document.getElementById('add-name').value.trim();
-  if(!n){toast('请输入藏品名称');return}
-  toast('✅ 录入成功！')
-  document.getElementById('add-form').reset();
-  setTimeout(()=>showPage('page-fav'),800)
+function doSearch(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  const a=document.querySelector('.flt.active');const cat=a?a.dataset.cat:'all';
+  let list=cat==='all'?STAMPS:STAMPS.filter(s=>s.dyn===cat);
+  if(q)list=list.filter(s=>s.name.includes(q)||s.dyn.includes(q));
+  document.getElementById('search-grid').innerHTML=list.length?list.map(s=>
+    `<div class=\"s-card\" onclick=\"loadDetail('${s.id}')\"><div class=\"th\">邮</div><div class=\"inf\"><div class=\"nm\">${s.name}</div><div class=\"pr\">${s.prices[0].v}</div></div></div>`
+  ).join(''):'<div class="empty"><div class="ic">🔍</div><p>没有匹配的藏品</p></div>'
 }
-
-// Init
-renderRecent();renderFavGrid();loadMarket();renderAuction();
+function setFlt(el){document.querySelectorAll('.flt').forEach(c=>c.classList.remove('active'));el.classList.add('active');doSearch()}
+function handleAdd(e){e.preventDefault();const n=document.getElementById('add-name').value.trim();if(!n){toast('请输入藏品名称');return}toast('✅ 录入成功！');document.getElementById('add-name').value='';setTimeout(()=>nav('p-fav',document.querySelector('[data-page=p-fav]')),800)}
+renderRecent();renderFavGrid();renderAuc();updateStats();doSearch();
 
 // Install
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-banner').classList.add('show')})
-document.getElementById('install-btn').onclick=async()=>{
-  if(deferredPrompt){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;if(r.outcome==='accepted'){document.getElementById('install-banner').classList.remove('show');toast('✅ 已安装到桌面')};deferredPrompt=null}
-}
+let dp;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('ib').classList.add('show')});
+document.getElementById('ibtn').onclick=async()=>{if(dp){dp.prompt();const r=await dp.userChoice;if(r.outcome==='accepted'){document.getElementById('ib').classList.remove('show');toast('✅ 已安装')}}};
 if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js')})}
 </script>
 </body>
