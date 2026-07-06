@@ -308,7 +308,7 @@ function matchStamp(extracted) {
 async function callAI(base64Image) {
   showLoad(true);
   try {
-    // Phase 1: Identify item type + extract postmark + overall info
+    // Single combined analysis: identify item, stamp, postmark all at once
     var resp = await fetch(API_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
@@ -317,59 +317,23 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","code":"邮票志号(如T46,纪94M,如有)","name":"邮票名称","postmark":"邮戳上的地名(实寄封时特别重要，注意邮戳文字是环形排列，文字可能变形，仔细辨别每个字，常见误读：东→齐/京、昌→冒、湖→沽、北→兆、重→里)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)"}。如果是实寄封，postmark必填。只输出JSON。'},
+            {type:'text', text:'仔细看这张邮票/实寄封图片，一步完成所有识别。输出JSON：{"itemType":"物品类型(stamp=邮票/cover=实寄封)","name":"邮票完整官方名称(不含志号)","code":"志号(如2025-25)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封必填，注意环形文字变形，东≠齐、昌≠冒、湖≠沽)","exactArtifact":"邮票图案上的具体文物名称(如睡虎地秦简/里耶秦简/郭店楚简，精确到哪一批)","patternDesc":"文物背景简解(50字)","description":"邮票基本信息","estimatedPrice":"参考价格"}。一次完成所有识别。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
-        max_tokens:512,
+        max_tokens:1024,
         response_format:{type:'json_object'}
       })
     });
     var data = await resp.json();
     var info = JSON.parse(data.choices[0].message.content);
 
-    // Phase 2: If it's a cover, do a second pass focusing on the stamp
-    var stampInfo = null;
-    if (info.itemType === 'cover') {
-      var resp2 = await fetch(API_URL, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-        body: JSON.stringify({
-          model: 'qwen3.7-plus',
-          messages: [{
-            role: 'user',
-            content: [
-              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(如庚申年猴票)","code":"志号(如T46)","faceValue":"面值","stampDesc":"邮票图案描述","postmark":"邮戳地名(注意环形排列变形文字，东≠齐、昌≠冒、湖≠沽)","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测。只输出JSON。'},
-              {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
-            ]
-          }],
-          max_tokens:512,
-          response_format:{type:'json_object'}
-        })
-      });
-      var data2 = await resp2.json();
-      stampInfo = JSON.parse(data2.choices[0].message.content);
-    }
+    var resultName = info.name || info.texts || '';
+    var resultCode = info.code || '';
 
-    // Build combined extracted data for matching
-    var resultName = (stampInfo && stampInfo.name) || info.name || info.texts || '';
-    var resultCode = (stampInfo && stampInfo.code) || info.code || '';
-    var extracted = {
-      texts: info.texts || '',
-      name: resultName,
-      code: resultCode,
-      dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
-      year: (stampInfo && stampInfo.year) || info.year || '',
-      face: (stampInfo && stampInfo.faceValue) || '',
-      region: '',
-      type: info.itemType === 'cover' ? '首日实寄封' : '邮票',
-      postmark: info.postmark || '',
-      stampName: (stampInfo && stampInfo.name) || '',
-    };
-
-    // Step 3: Query AI knowledge base for detailed stamp info
-    var knowledgeQuery = '邮票名称：' + (resultName || '未知') + '，志号：' + (resultCode || '未知') + '，朝代：' + (info.dynasty || '') + '，年份：' + (info.year || '') + '，邮戳：' + (info.postmark || '');
-    if (info.itemType === 'cover') knowledgeQuery += '，类型：首日实寄封';
+    // Knowledge query - text only, fast
+    var knowledgeQuery = '邮票：'+resultName+'，志号：'+resultCode+'，年代：'+(info.dynasty||'')+'，年份：'+(info.year||'')+'，类型：'+(info.stampType||'')+'，文物：'+(info.exactArtifact||'');
+    if (info.postmark) knowledgeQuery += '，邮戳：'+info.postmark;
 
     var resp3 = await fetch(API_URL, {
       method: 'POST',
@@ -386,17 +350,26 @@ async function callAI(base64Image) {
     });
     var data3 = await resp3.json();
     var knowledge = JSON.parse(data3.choices[0].message.content);
-    knowledge.source = 'ai_knowledge';
-    knowledge.matchHint = '🔍 AI 知识库匹配';
-    knowledge.postmark = extracted.postmark;
-    // Combine artifact + pattern + description
+    // Merge initial analysis with knowledge query results
     var descParts = [];
     if (info.itemType === 'cover') descParts.push('【类型】实寄封');
-    if (knowledge.exactArtifact) descParts.push('【文物/图案】' + knowledge.exactArtifact);
-    if (stampInfo && stampInfo.stampDesc) descParts.push('【画面】' + stampInfo.stampDesc);
-    if (knowledge.patternDescription) descParts.push('【文化背景】' + knowledge.patternDescription);
-    if (knowledge.description) descParts.push('【概况】' + knowledge.description);
-    knowledge.description = descParts.join('\n') || knowledge.description;
+    if (info.exactArtifact || knowledge.exactArtifact) descParts.push('【文物/图案】' + (knowledge.exactArtifact || info.exactArtifact));
+    if (info.patternDesc || knowledge.patternDescription) descParts.push('【文化背景】' + (knowledge.patternDescription || info.patternDesc));
+    if (info.description || knowledge.description) descParts.push('【概况】' + (knowledge.description || info.description));
+    // Fill gaps with knowledge or initial info
+    knowledge.description = descParts.join('\n') || info.description || '';
+    knowledge.name = knowledge.name || info.name || '';
+    knowledge.code = knowledge.code || info.code || '';
+    knowledge.dynasty = knowledge.dynasty || info.dynasty || '';
+    knowledge.year = knowledge.year || info.year || '';
+    knowledge.faceValue = knowledge.faceValue || info.faceValue || '';
+    knowledge.category = knowledge.category || info.category || '';
+    knowledge.region = knowledge.region || info.region || '';
+    knowledge.stampType = knowledge.stampType || info.stampType || (info.itemType === 'cover' ? '首日实寄封' : '邮票');
+    knowledge.estimatedPrice = knowledge.estimatedPrice || info.estimatedPrice || '';
+    knowledge.postmark = info.postmark || '';
+    knowledge.source = 'ai_knowledge';
+    knowledge.matchHint = '🔍 AI 知识库匹配';
     return knowledge;
 
   } catch(e) {
