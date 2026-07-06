@@ -221,7 +221,7 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
     <div class="pmi" onclick="clearData()"><span class="t">清空所有数据</span><span class="a">›</span></div>
     <div class="pmi" onclick="checkUpdate()"><span class="t">检查更新</span><span class="a">›</span></div>
     <div style="text-align:center;padding:16px;font-size:11px;color:var(--m)">
-      版本 <span id="verNum">v4</span> ·
+      版本 <span id="verNum">v5</span> ·
       <span id="cacheStatus">已缓存</span>
       <span id="updateNotice" style="display:none;color:#E93D82;font-weight:600;cursor:pointer" onclick="location.reload()"> · 有新版本，点击刷新</span>
     </div>
@@ -797,7 +797,7 @@ renderAll();
 var swReg = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js?v=4').then(function(reg) {
+    navigator.serviceWorker.register('service-worker.js?v=5').then(function(reg) {
       swReg = reg;
 
       // Check if there's a waiting service worker (already updated but not active)

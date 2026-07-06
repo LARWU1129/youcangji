@@ -2,7 +2,7 @@
   "name": "邮藏集",
   "short_name": "邮藏集",
   "description": "邮票收藏管理 — 发现、收藏、管理您的珍贵邮票",
-  "start_url": "index.html?v=4",
+  "start_url": "index.html?v=5",
   "display": "standalone",
   "background_color": "#FAF8F5",
   "theme_color": "#1B324F",
