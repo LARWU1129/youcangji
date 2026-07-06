@@ -394,44 +394,46 @@ function handleImage(input, skipCrop) {
   reader.onload = function(e) {
     var fullBase64 = e.target.result;
     var base64Data = fullBase64.split(',')[1];
-    window._currentImage = base64Data;
-    window._currentImageFull = fullBase64;
 
-    if (skipCrop) {
-      // Gallery: skip crop, go directly to recognition
-      recognizeStamp(base64Data);
-      // Show preview inline
-      document.getElementById('scanArea').innerHTML =
-        '<img src="'+fullBase64+'" class="preview-img">'
-        + '<div style="display:flex;gap:8px;margin-top:8px">'
-        + '<button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="retake()">重选</button>'
-        + '</div>';
-      return;
-    }
+    // Compress image before storing/processing
+    compressImage(base64Data, 1200, 0.8).then(function(compressed) {
+      window._currentImage = compressed;
+      window._currentImageFull = 'data:image/jpeg;base64,' + compressed;
 
-    // Camera: show crop UI
-    document.getElementById('scanArea').style.display = 'none';
-    document.getElementById('cropArea').style.display = 'block';
-    document.getElementById('aiResult').innerHTML = '';
-    document.getElementById('saveForm').style.display = 'none';
+      if (skipCrop) {
+        recognizeStamp(compressed);
+        document.getElementById('scanArea').innerHTML =
+          '<img src="data:image/jpeg;base64,'+compressed+'" class="preview-img">'
+          + '<div style="display:flex;gap:8px;margin-top:8px">'
+          + '<button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="retake()">重选</button>'
+          + '</div>';
+        return;
+      }
 
-    var img = new Image();
-    img.onload = function() {
-      _cropImg = img;
-      var canvas = document.getElementById('cropCanvas');
-      var c = canvas.getContext('2d');
-      var w = Math.min(img.width, canvas.parentElement.clientWidth);
-      var h = w * img.height / img.width;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      c.drawImage(img, 0, 0, w, h);
-      window._cropScale = {sx: img.width / w, sy: img.height / h};
-      var pad = w * 0.05;
-      showCropBox(pad, pad, w - 2*pad, h - 2*pad);
-    };
-    img.src = fullBase64;
+      // Camera: show crop UI
+      document.getElementById('scanArea').style.display = 'none';
+      document.getElementById('cropArea').style.display = 'block';
+      document.getElementById('aiResult').innerHTML = '';
+      document.getElementById('saveForm').style.display = 'none';
+
+      var img = new Image();
+      img.onload = function() {
+        _cropImg = img;
+        var canvas = document.getElementById('cropCanvas');
+        var c = canvas.getContext('2d');
+        var w = Math.min(img.width, canvas.parentElement.clientWidth);
+        var h = w * img.height / img.width;
+        canvas.width = w;
+        canvas.height = h;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        c.drawImage(img, 0, 0, w, h);
+        window._cropScale = {sx: img.width / w, sy: img.height / h};
+        var pad = w * 0.05;
+        showCropBox(pad, pad, w - 2*pad, h - 2*pad);
+      };
+      img.src = window._currentImageFull;
+    });
   };
   reader.readAsDataURL(file);
 }
@@ -511,9 +513,31 @@ function cropCancel() {
   document.getElementById('scanArea').style.display = 'block';
 }
 
+function compressImage(base64Data, maxSize, quality) {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w <= maxSize && h <= maxSize) { resolve(base64Data); return; }
+      if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+      else { w = Math.round(w * maxSize / h); h = maxSize; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = canvas.toDataURL('image/jpeg', quality).split(',')[1];
+      resolve(compressed);
+    };
+    img.src = 'data:image/jpeg;base64,' + base64Data;
+  });
+}
+
 function confirmImage() {
   if (window._currentImage) {
-    recognizeStamp(window._currentImage);
+    compressImage(window._currentImage, 1200, 0.8).then(function(compressed) {
+      window._currentImage = compressed;
+      recognizeStamp(compressed);
+    });
   }
 }
 
