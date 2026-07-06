@@ -367,30 +367,37 @@ async function callAI(base64Image) {
       stampName: (stampInfo && stampInfo.name) || '',
     };
 
-    // Step 3: Try to match against stamp database
-    var matched = matchStamp(extracted);
-    if (matched) {
-      return {
-        code: matched.code || '',
-        name: matched.name,  // base name only, autoName will prepend code
-        dynasty: matched.dynasty,
-        year: matched.year,
-        faceValue: matched.face,
-        category: matched.cat,
-        region: matched.region,
-        stampType: matched.type,
-        postmark: extracted.postmark,
-        description: (info.itemType === 'cover' ? '实寄封' : '邮票') + '。' + ((stampInfo && stampInfo.stampDesc) || matched.desc),
-        estimatedPrice: matched.price,
-        source: 'database',
-        matchHint: '✅ 数据库匹配'
-      };
-    }
+    // Step 3: Query AI knowledge base for detailed stamp info
+    var knowledgeQuery = '邮票名称：' + (resultName || '未知') + '，志号：' + (resultCode || '未知') + '，朝代：' + (info.dynasty || '') + '，年份：' + (info.year || '') + '，邮戳：' + (info.postmark || '');
+    if (info.itemType === 'cover') knowledgeQuery += '，类型：首日实寄封';
 
-    // Step 4: Return best available info
-    return {
-      code: resultCode,
-      name: resultName || '未知',
+    var resp3 = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+      body: JSON.stringify({
+        model: 'qwen3.7-plus',
+        messages: [{
+          role: 'user',
+          content: [
+            {type:'text', text:'你是中国邮票知识库。根据给定信息，输出这张邮票的完整信息JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","description":"详细描述(材质/印刷/历史背景/收藏价值)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。如果信息不足，根据你的知识补充最合理的推测。只输出JSON。'},
+          ]
+        }],
+        max_tokens:1024,
+        response_format:{type:'json_object'}
+      })
+    });
+    var data3 = await resp3.json();
+    var knowledge = JSON.parse(data3.choices[0].message.content);
+    knowledge.source = 'ai_knowledge';
+    knowledge.matchHint = '🔍 AI 知识库匹配';
+    knowledge.postmark = extracted.postmark;
+    // Use the combined description if available
+    var descParts = [];
+    if (info.itemType === 'cover') descParts.push('实寄封');
+    if (stampInfo && stampInfo.stampDesc) descParts.push(stampInfo.stampDesc);
+    if (knowledge.description) descParts.push(knowledge.description);
+    knowledge.description = descParts.join('。') || knowledge.description;
+    return knowledge;
       dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
       year: (stampInfo && stampInfo.year) || info.year || '',
       faceValue: (stampInfo && stampInfo.faceValue) || '',
@@ -577,8 +584,8 @@ async function recognizeStamp(base64) {
     autoName();
     showMarketLinks();
     var hint = data.matchHint || '✅ AI 识别完成';
-    var bgColor = data.source === 'database' ? '#E8F5E9' : '#FFF3E0';
-    var textColor = data.source === 'database' ? '#2E7D32' : '#E65100';
+    var bgColor = data.source === 'database' ? '#E8F5E9' : '#E3F2FD';
+    var textColor = data.source === 'database' ? '#2E7D32' : '#1565C0';
     result.innerHTML = '<div style="background:'+bgColor+';color:'+textColor+';padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">'+hint+'，请确认并保存</div>';
     document.getElementById('saveForm').style.display = 'block';
   } else {
