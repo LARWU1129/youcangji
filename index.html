@@ -132,8 +132,8 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
       <button class="btn gold" style="flex:1;font-size:13px;padding:10px" onclick="pickGallery()">🖼️ 相册</button>
     </div>
   </div>
-  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)">
-  <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(this)">
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this,false)">
+  <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(this,true)">
   <div id="cropArea" style="display:none;padding:0 16px 8px">
     <div style="position:relative;width:100%;overflow:hidden;border-radius:var(--r);background:#000" id="cropContainer">
       <canvas id="cropCanvas" style="width:100%;display:block"></canvas>
@@ -417,7 +417,7 @@ function pickGallery() { document.getElementById('galleryInput').click(); }
 var _cropImg = null;
 var _cropStartX, _cropStartY, _cropActive = false;
 
-function handleImage(input) {
+function handleImage(input, skipCrop) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
   var reader = new FileReader();
@@ -427,13 +427,24 @@ function handleImage(input) {
     window._currentImage = base64Data;
     window._currentImageFull = fullBase64;
 
-    // Hide scan area, show crop area
+    if (skipCrop) {
+      // Gallery: skip crop, go directly to recognition
+      recognizeStamp(base64Data);
+      // Show preview inline
+      document.getElementById('scanArea').innerHTML =
+        '<img src="'+fullBase64+'" class="preview-img">'
+        + '<div style="display:flex;gap:8px;margin-top:8px">'
+        + '<button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="retake()">重选</button>'
+        + '</div>';
+      return;
+    }
+
+    // Camera: show crop UI
     document.getElementById('scanArea').style.display = 'none';
     document.getElementById('cropArea').style.display = 'block';
     document.getElementById('aiResult').innerHTML = '';
     document.getElementById('saveForm').style.display = 'none';
 
-    // Load image into canvas for cropping
     var img = new Image();
     img.onload = function() {
       _cropImg = img;
@@ -447,7 +458,6 @@ function handleImage(input) {
       canvas.style.height = h + 'px';
       c.drawImage(img, 0, 0, w, h);
       window._cropScale = {sx: img.width / w, sy: img.height / h};
-      // Set default crop box (90% of image)
       var pad = w * 0.05;
       showCropBox(pad, pad, w - 2*pad, h - 2*pad);
     };
