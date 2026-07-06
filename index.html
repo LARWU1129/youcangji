@@ -317,7 +317,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","code":"邮票志号(如T46,纪94M,如有)","name":"邮票名称","postmark":"邮戳上的地名(实寄封时特别重要)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)"}。如果是实寄封，postmark必填。只输出JSON。'},
+            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","code":"邮票志号(如T46,纪94M,如有)","name":"邮票名称","postmark":"邮戳上的地名(实寄封时特别重要，注意邮戳文字是环形排列，文字可能变形，仔细辨别每个字，常见误读：东→齐/京、昌→冒、湖→沽、北→兆、重→里)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)"}。如果是实寄封，postmark必填。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -339,7 +339,7 @@ async function callAI(base64Image) {
           messages: [{
             role: 'user',
             content: [
-              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(如庚申年猴票)","code":"志号(如T46)","faceValue":"面值","stampDesc":"邮票图案描述","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测。只输出JSON。'},
+              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(如庚申年猴票)","code":"志号(如T46)","faceValue":"面值","stampDesc":"邮票图案描述","postmark":"邮戳地名(注意环形排列变形文字，东≠齐、昌≠冒、湖≠沽)","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测。只输出JSON。'},
               {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
             ]
           }],
