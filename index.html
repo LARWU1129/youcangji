@@ -212,9 +212,66 @@ var stamps = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
 var API_KEY = 'sk-ws-H.RXIHRLM.svtl.MEQCIFGGBFw2qBtHhpYmb_-7cUy2gAPlDX_2CKMquiw1r8lxAiBi093MxdwVBxLwnDLR0nAdHpILJ_Re0pJZVPN5NVFzuQ';
 var API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
+// ===== Stamp Database =====
+var STAMP_DB = [
+  {id:'db1',name:'大龙薄纸壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 薄纸 壹分银 云龙',desc:'中国第一套邮票，薄纸版壹分银，图案为云龙戏珠，寓意吉祥，由上海海关造册处印制。',price:'¥38,000'},
+  {id:'db2',name:'大龙阔边壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 阔边 壹分银 云龙',desc:'大龙邮票阔边版，纸质较厚，边框距离画面较宽，存量少于薄纸版。',price:'¥86,000'},
+  {id:'db3',name:'红印花小字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 小字 当壹圆 加盖',desc:'红印花加盖小字当壹圆，清代邮政珍邮，加盖小字当壹圆于红印花税票上。',price:'¥287,500'},
+  {id:'db4',name:'红印花大字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 大字 当壹圆 加盖',desc:'红印花加盖大字当壹圆，加盖字体较大，数量多于小字版。',price:'¥138,000'},
+  {id:'db5',name:'慈禧寿辰纪念票',dynasty:'清代',year:'1894',face:'贰分',cat:'经典',region:'中国内地',type:'邮票',kw:'慈禧 寿辰 万寿 纪念 五福',desc:'慈禧太后六十寿辰纪念邮票，中国第一套纪念邮票，俗称万寿票。',price:'¥15,000'},
+  {id:'db6',name:'龙马图邮票',dynasty:'清代',year:'1888',face:'壹佰文',cat:'经典',region:'台湾',type:'邮票',kw:'龙马 台湾 龙马图 马',desc:'台湾邮政总局发行的龙马图邮票，图案为龙马精神。',price:'¥12,000'},
+  {id:'db7',name:'上海寄香港实寄封',dynasty:'清代',year:'1902',face:'实寄封',cat:'经典',region:'中国内地',type:'首日实寄封',kw:'实寄封 上海 香港 蟠龙',desc:'上海工部局书信馆寄往香港的实寄封，贴蟠龙邮票2分。',price:'¥3,500'},
+  {id:'db8',name:'澳门皇冠邮票',dynasty:'清代',year:'1884',face:'10',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 皇冠 葡属 葡萄牙',desc:'澳门发行的皇冠图案邮票，葡萄牙殖民时期邮政用品。',price:'¥6,800'},
+  {id:'db9',name:'香港维多利亚女王像',dynasty:'清代',year:'1862',face:'8分',cat:'经典',region:'香港',type:'邮票',kw:'香港 维多利亚 女王 雕刻',desc:'香港最早发行的邮票之一，维多利亚女王侧面像，雕刻版印刷。',price:'¥15,000'},
+  {id:'db10',name:'孙中山像伦敦版',dynasty:'民国',year:'1931',face:'贰圆',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 伦敦版 雕刻 贰圆',desc:'伦敦德纳罗公司雕刻印刷的孙中山像邮票，线条细腻，印刷精良。',price:'¥6,900'},
+  {id:'db11',name:'孙中山像国父纪念',dynasty:'民国',year:'1940',face:'贰角',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 国父 纪念 全会',desc:'孙中山先生国父纪念邮票，民国时期发行。',price:'¥2,800'},
+  {id:'db12',name:'梅兰芳舞台艺术小型张',dynasty:'新中国',year:'1962',face:'8分+50分',cat:'纪特',region:'中国内地',type:'小型张',kw:'梅兰芳 贵妃醉酒 舞台艺术 小型张 纪94',desc:'梅兰芳舞台艺术小型张，纪94M，新中国第一枚小型张，JT票之王。',price:'¥218,500'},
+  {id:'db13',name:'全国山河一片红',dynasty:'新中国',year:'1968',face:'8分',cat:'文革',region:'中国内地',type:'邮票',kw:'全国山河一片红 文革 地图 撤销',desc:'新中国最著名珍邮，因地图绘制问题被紧急撤销，少量流出。',price:'¥1,035,000'},
+  {id:'db14',name:'庚申年猴票',dynasty:'新中国',year:'1980',face:'8分',cat:'生肖',region:'中国内地',type:'邮票',kw:'庚申 猴 生肖 黄永玉 第一枚',desc:'T46庚申年猴票，黄永玉设计，中国第一枚生肖邮票。',price:'¥12,650'},
+  {id:'db15',name:'香港回归纪念封',dynasty:'新中国',year:'1997',face:'纪念封',cat:'经典',region:'香港',type:'首日实寄封',kw:'香港回归 1997 纪念封 日戳',desc:'香港回归祖国纪念实寄封，加盖1997年7月1日香港日戳。',price:'¥5,200'},
+  {id:'db16',name:'澳门灯塔小型张',dynasty:'新中国',year:'1996',face:'5元',cat:'纪特',region:'澳门',type:'小型张',kw:'澳门 灯塔 东望洋 小型张',desc:'澳门灯塔主题小型张，画面为东望洋灯塔，色彩绚丽。',price:'¥1,800'},
+  {id:'db17',name:'牡丹亭小型张',dynasty:'新中国',year:'1984',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'牡丹亭 小型张 汤显祖 戏曲',desc:'T99M牡丹亭小型张，取材于汤显祖名作，设计典雅。',price:'¥2,500'},
+  {id:'db18',name:'台湾猴年生肖票',dynasty:'新中国',year:'1968',face:'5角',cat:'生肖',region:'台湾',type:'邮票',kw:'台湾 生肖 猴 猴年',desc:'台湾发行的生肖邮票，猴年图案，设计活泼。',price:'¥4,500'},
+  {id:'db19',name:'齐白石作品选',dynasty:'新中国',year:'1980',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'齐白石 国画 虾 绘画 艺术',desc:'T44齐白石作品选邮票，全套16枚，选取齐白石代表画作。',price:'¥8,500'},
+  {id:'db20',name:'从小爱科学小型张',dynasty:'新中国',year:'1979',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'科学 天文 航模 小爱 小型张',desc:'T41M从小爱科学小型张，图案为少年儿童科技活动。',price:'¥28,500'},
+  {id:'db21',name:'金鱼邮票',dynasty:'新中国',year:'1960',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'金鱼 观赏鱼 水生 动物',desc:'特38金鱼邮票，全套12枚，展现多种名贵金鱼品种。',price:'¥12,800'},
+  {id:'db22',name:'黄山风景',dynasty:'新中国',year:'1963',face:'多种',cat:'纪特',region:'中国内地',type:'邮票',kw:'黄山 风景 迎客松 云海 奇峰',desc:'特57黄山风景邮票，全套16枚，展现黄山四绝奇观。',price:'¥32,000'},
+  {id:'db23',name:'香港经典邮票小型张',dynasty:'新中国',year:'1991',face:'5元',cat:'经典',region:'香港',type:'小型张',kw:'香港 经典 维多利亚 港',desc:'香港经典邮票小型张，画面为维多利亚港景色。',price:'¥1,200'},
+  {id:'db24',name:'澳门妈祖庙邮票',dynasty:'新中国',year:'1994',face:'3元',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 妈祖 庙宇 建筑 宗教',desc:'澳门妈祖庙邮票，展现澳门标志性建筑妈祖阁。',price:'¥800'},
+];
+
+function matchStamp(extracted) {
+  var keywords = (extracted.texts || '') + ' ' + (extracted.name || '') + ' ' + (extracted.dynasty || '') + ' ' + (extracted.face || '');
+  var words = keywords.toLowerCase().split(/[\s,，。]+/).filter(function(w){return w.length>1});
+
+  // Score each stamp in DB
+  var scored = STAMP_DB.map(function(s) {
+    var score = 0;
+    var dbKw = s.kw.toLowerCase() + ' ' + s.name.toLowerCase() + ' ' + s.dynasty + ' ' + s.face;
+    words.forEach(function(w) {
+      if (dbKw.indexOf(w) >= 0) score += 10;
+    });
+    // Bonus for matching dynasty
+    if (extracted.dynasty && s.dynasty.indexOf(extracted.dynasty) >= 0) score += 20;
+    // Bonus for matching year range
+    if (extracted.year && s.year) {
+      var ey = parseInt(extracted.year);
+      var sy = parseInt(s.year);
+      if (!isNaN(ey) && !isNaN(sy) && Math.abs(ey - sy) < 5) score += 15;
+    }
+    return {stamp:s, score:score};
+  });
+
+  scored.sort(function(a,b){return b.score - a.score});
+  var best = scored[0];
+  if (best && best.score >= 15) return best.stamp;
+  return null;
+}
+
 async function callAI(base64Image) {
   showLoad(true);
   try {
+    // Step 1: AI extracts text and features from the image
     var resp = await fetch(API_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
@@ -223,7 +280,45 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是一个邮票鉴定专家。请识别这张邮票图片，输出JSON格式：{"name":"邮票名称","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","description":"详细描述(材质/印刷/历史背景/收藏价值)","estimatedPrice":"估计市场参考价格"}。如果无法识别，请输出你最好的推测。只输出JSON，不要其他文字。'},
+            {type:'text', text:'仔细看这张邮票图片，提取以下信息输出JSON格式。注意：只能输出图片中实际可见的内容，不要编造：{"texts":"图片上可见的文字内容","colors":"主要颜色","name":"根据文字推断的邮票名称(如有文字)","dynasty":"判断朝代(清代/民国/新中国/无法判断)","year":"图片上的年份数字(如有)","face":"面值文字(如有)","region":"地区(图案/文字暗示的地区)","type":"类型(邮票/小型张/首日实寄封)"}。如果图片上看不到任何邮票特征，texts请写"无法识别"。'},
+            {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
+          ]
+        }],
+        max_tokens:512,
+        response_format:{type:'json_object'}
+      })
+    });
+    var data = await resp.json();
+    var extracted = JSON.parse(data.choices[0].message.content);
+
+    // Step 2: Match against stamp database
+    var matched = matchStamp(extracted);
+    if (matched) {
+      return {
+        name: matched.name,
+        dynasty: matched.dynasty,
+        year: matched.year,
+        faceValue: matched.face,
+        category: matched.cat,
+        region: matched.region,
+        stampType: matched.type,
+        description: matched.desc,
+        estimatedPrice: matched.price,
+        source: 'database',
+        matchHint: '✅ 数据库匹配'
+      };
+    }
+
+    // Step 3: Fallback to AI's own knowledge
+    var resp2 = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+      body: JSON.stringify({
+        model: 'qwen3.7-plus',
+        messages: [{
+          role: 'user',
+          content: [
+            {type:'text', text:'你是邮票鉴定专家。根据这张邮票图片，输出JSON：{"name":"推测的邮票名称","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","description":"描述","estimatedPrice":"参考价格"}。如果不能确定，就写"推测"。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -231,18 +326,15 @@ async function callAI(base64Image) {
         response_format:{type:'json_object'}
       })
     });
-    var data = await resp.json();
-    var text = data.choices[0].message.content;
-    return JSON.parse(text);
+    var data2 = await resp2.json();
+    var guess = JSON.parse(data2.choices[0].message.content);
+    guess.source = 'ai_guess';
+    guess.matchHint = '⚠️ AI推测(未匹配到数据库)';
+    return guess;
+
   } catch(e) {
     console.error(e);
-    // Fallback: try to extract JSON from response
-    try {
-      var text2 = data?.choices?.[0]?.message?.content || '{}';
-      return JSON.parse(text2.replace(/```json/g,'').replace(/```/g,''));
-    } catch(e2) {
-      return null;
-    }
+    return null;
   } finally {
     showLoad(false);
   }
@@ -282,7 +374,10 @@ async function recognizeStamp(base64) {
     if (data.region) document.getElementById('f-region').value = data.region;
     if (data.stampType) document.getElementById('f-type').value = data.stampType;
 
-    result.innerHTML = '<div style="background:#E8F5E9;color:#2E7D32;padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">✅ AI 识别完成，请确认并保存</div>';
+    var hint = data.matchHint || '✅ AI 识别完成';
+    var bgColor = data.source === 'database' ? '#E8F5E9' : '#FFF3E0';
+    var textColor = data.source === 'database' ? '#2E7D32' : '#E65100';
+    result.innerHTML = '<div style="background:'+bgColor+';color:'+textColor+';padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">'+hint+'，请确认并保存</div>';
     document.getElementById('saveForm').style.display = 'block';
   } else {
     result.innerHTML = '<div style="background:#FFF3E0;color:#E65100;padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">⚠️ AI 识别失败，请手动输入信息</div>';
