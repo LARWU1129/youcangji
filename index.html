@@ -334,9 +334,8 @@ async function callAI(base64Image) {
     // Knowledge query - text only, fast
     var knowledgeQuery = '邮票：'+resultName+'，志号：'+resultCode+'，年代：'+(info.dynasty||'')+'，年份：'+(info.year||'')+'，类型：'+(info.stampType||'')+'，文物：'+(info.exactArtifact||'');
     if (info.postmark) knowledgeQuery += '，邮戳：'+info.postmark;
-    if (info.postmarkDate) knowledgeQuery += '，首日日期：'+info.postmarkDate+'（此为邮票发行首日，可据此查询当天发行的邮票志号）';
+    if (info.postmarkDate) knowledgeQuery += '，首日日期：'+info.postmarkDate;
     if (info.stampPosition) knowledgeQuery += "，全套枚序："+info.stampPosition;
-    if (info.postmarkDate) knowledgeQuery += "，首日日期："+info.postmarkDate+"（首日日期可查当天发行的邮票志号）";
 
     var resp3 = await fetch(API_URL, {
       method: 'POST',
