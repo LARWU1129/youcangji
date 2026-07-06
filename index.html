@@ -328,68 +328,19 @@ async function callAI(base64Image) {
     var data = await resp.json();
     var info = JSON.parse(data.choices[0].message.content);
 
-    var resultName = info.name || info.texts || '';
-    var resultCode = info.code || '';
-
-    // Knowledge query - text only, fast
-    var knowledgeQuery = '邮票：'+resultName+'，志号：'+resultCode+'，年代：'+(info.dynasty||'')+'，年份：'+(info.year||'')+'，类型：'+(info.stampType||'')+'，文物：'+(info.exactArtifact||'');
-    if (info.postmark) knowledgeQuery += '，邮戳：'+info.postmark;
-    if (info.postmarkDate) knowledgeQuery += '，首日日期：'+info.postmarkDate;
-    if (info.stampPosition) knowledgeQuery += "，全套枚序："+info.stampPosition;
-
-    var resp3 = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-      body: JSON.stringify({
-        model: 'qwen3.7-plus',
-        messages: [{
-          role: 'user',
-          content: '根据志号输出JSON：{"name":"名称","code":"志号","dynasty":"朝代","year":"年份","faceValue":"面值","category":"分类","region":"地区","stampType":"类型","exactArtifact":"文物(确定才写)","patternDescription":"图案文化背景(80字)","description":"邮票信息","estimatedPrice":"价格"}。参考：'+knowledgeQuery+'。志号优先使用，确定的信息才写。只输出JSON。'
-        }],
-        max_tokens:1024,
-        response_format:{type:'json_object'}
-      })
-    });
-    var data3 = await resp3.json();
-    var knowledge = JSON.parse(data3.choices[0].message.content);
-    // Merge initial analysis with knowledge query results
+    // Build description from Phase 1 results
     var descParts = [];
     if (info.itemType === 'cover') descParts.push('【类型】实寄封');
-    if (info.exactArtifact || knowledge.exactArtifact) descParts.push('【文物/图案】' + (knowledge.exactArtifact || info.exactArtifact));
-    if (info.patternDesc || knowledge.patternDescription) descParts.push('【文化背景】' + (knowledge.patternDescription || info.patternDesc));
-    if (info.description || knowledge.description) descParts.push('【概况】' + (knowledge.description || info.description));
-    // Fill gaps with knowledge or initial info
-    knowledge.description = descParts.join('\n') || info.description || '';
-    knowledge.name = knowledge.name || info.name || '';
-    knowledge.code = knowledge.code || info.code || '';
-    knowledge.dynasty = knowledge.dynasty || info.dynasty || '';
-    knowledge.year = knowledge.year || info.year || '';
-    knowledge.faceValue = knowledge.faceValue || info.faceValue || '';
-    knowledge.category = knowledge.category || info.category || '';
-    knowledge.region = knowledge.region || info.region || '';
-    knowledge.stampType = knowledge.stampType || info.stampType || (info.itemType === 'cover' ? '首日实寄封' : '邮票');
-    knowledge.estimatedPrice = knowledge.estimatedPrice || info.estimatedPrice || '';
-    knowledge.postmark = info.postmark || '';
-    knowledge.source = 'ai_knowledge';
-    knowledge.matchHint = '🔍 AI 知识库匹配';
-    return knowledge;
+    if (info.exactArtifact) descParts.push('【文物/图案】' + info.exactArtifact);
+    if (info.patternDesc) descParts.push('【文化背景】' + info.patternDesc);
+    if (info.description) descParts.push('【概况】' + info.description);
+    info.description = descParts.join('\n') || info.description || '';
+    info.source = 'phase1';
+    info.matchHint = '✅ 识别完成';
+    return info;
 
   } catch(e) {
     console.error(e);
-    // Phase 3 failed, return Phase 1 results if available
-    if (typeof info !== 'undefined' && info) {
-      info.source = 'phase1_only';
-      info.matchHint = '⚠️ 基础识别（知识库查询超时）';
-      info.postmark = info.postmark || '';
-      // Build description from Phase 1 data
-      var p1Parts = [];
-      if (info.itemType === 'cover') p1Parts.push('【类型】实寄封');
-      if (info.exactArtifact) p1Parts.push('【文物/图案】' + info.exactArtifact);
-      if (info.patternDesc) p1Parts.push('【文化背景】' + info.patternDesc);
-      if (info.description) p1Parts.push('【概况】' + info.description);
-      info.description = p1Parts.join('\n') || info.description || '';
-      return info;
-    }
     return null;
   } finally {
     showLoad(false);
