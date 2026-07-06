@@ -280,7 +280,7 @@ function matchStamp(extracted) {
 async function callAI(base64Image) {
   showLoad(true);
   try {
-    // Step 1: AI extracts text and features from the image
+    // Phase 1: Identify item type + extract postmark + overall info
     var resp = await fetch(API_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
@@ -289,7 +289,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'仔细看这张邮票/实寄封图片，提取以下信息输出JSON。只能输出实际可见内容，不要编造：{"texts":"图片上可见的文字内容","colors":"主要颜色","name":"邮票/实寄封名称(如有文字)","dynasty":"判断朝代(清代/民国/新中国/无法判断)","year":"图片上的年份数字(如有)","face":"面值文字(如有)","region":"地区(图案/文字暗示的地区)","type":"类型(邮票/小型张/首日实寄封)","postmark":"邮戳上的地名/寄出地(如有，非常重要)"}。如果是实寄封，请特别注意提取邮戳上的地名。如果看不到任何邮票特征，texts写"无法识别"。'},
+            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","postmark":"邮戳上的地名(实寄封时特别重要)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)","stampOnCover":"封上邮票的图案和文字描述(如果是实寄封，仔细看封上贴的邮票)"}。如果是实寄封，postmark必填。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -298,9 +298,45 @@ async function callAI(base64Image) {
       })
     });
     var data = await resp.json();
-    var extracted = JSON.parse(data.choices[0].message.content);
+    var info = JSON.parse(data.choices[0].message.content);
 
-    // Step 2: Match against stamp database
+    // Phase 2: If it's a cover, do a second pass focusing on the stamp
+    var stampInfo = null;
+    if (info.itemType === 'cover') {
+      var resp2 = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+        body: JSON.stringify({
+          model: 'qwen3.7-plus',
+          messages: [{
+            role: 'user',
+            content: [
+              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(看邮票上文字)","faceValue":"面值","stampDesc":"邮票图案描述","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测可能的邮票。只输出JSON。'},
+              {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
+            ]
+          }],
+          max_tokens:512,
+          response_format:{type:'json_object'}
+        })
+      });
+      var data2 = await resp2.json();
+      stampInfo = JSON.parse(data2.choices[0].message.content);
+    }
+
+    // Build combined extracted data for matching
+    var extracted = {
+      texts: info.texts || '',
+      name: stampInfo ? stampInfo.name : (info.texts || ''),
+      dynasty: info.dynasty || '',
+      year: info.year || '',
+      face: (stampInfo && stampInfo.faceValue) || '',
+      region: '',
+      type: info.itemType === 'cover' ? '首日实寄封' : '邮票',
+      postmark: info.postmark || '',
+      stampName: (stampInfo && stampInfo.name) || '',
+    };
+
+    // Step 3: Try to match against stamp database
     var matched = matchStamp(extracted);
     if (matched) {
       return {
@@ -311,36 +347,29 @@ async function callAI(base64Image) {
         category: matched.cat,
         region: matched.region,
         stampType: matched.type,
-        postmark: extracted.postmark || '',
-        description: matched.desc,
+        postmark: extracted.postmark,
+        description: (info.itemType === 'cover' ? '实寄封' : '邮票') + '。' + ((stampInfo && stampInfo.stampDesc) || matched.desc),
         estimatedPrice: matched.price,
         source: 'database',
         matchHint: '✅ 数据库匹配'
       };
     }
 
-    // Step 3: Fallback to AI's own knowledge
-    var resp2 = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-      body: JSON.stringify({
-        model: 'qwen3.7-plus',
-        messages: [{
-          role: 'user',
-          content: [
-            {type:'text', text:'你是邮票鉴定专家。根据这张邮票图片，输出JSON：{"name":"推测的邮票名称","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封可见时)","description":"描述","estimatedPrice":"参考价格"}。如果是实寄封，特别注意邮戳地名。只输出JSON。'},
-            {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
-          ]
-        }],
-        max_tokens:1024,
-        response_format:{type:'json_object'}
-      })
-    });
-    var data2 = await resp2.json();
-    var guess = JSON.parse(data2.choices[0].message.content);
-    guess.source = 'ai_guess';
-    guess.matchHint = '⚠️ AI推测(未匹配到数据库)';
-    return guess;
+    // Step 4: Return best available info
+    return {
+      name: (stampInfo && stampInfo.name) || info.texts || '未知',
+      dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
+      year: (stampInfo && stampInfo.year) || info.year || '',
+      faceValue: (stampInfo && stampInfo.faceValue) || '',
+      category: (stampInfo && stampInfo.category) || '',
+      region: info.postmark || '',
+      stampType: info.itemType === 'cover' ? '首日实寄封' : '邮票',
+      postmark: info.postmark || '',
+      description: (stampInfo && stampInfo.stampDesc) || (info.texts || ''),
+      estimatedPrice: '',
+      source: 'ai_guess',
+      matchHint: '⚠️ AI推测'
+    };
 
   } catch(e) {
     console.error(e);
