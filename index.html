@@ -161,6 +161,7 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
   <div class="sb"><input id="sq" placeholder="搜索名称、朝代..." oninput="doSearch()"></div>
   <div class="fl"><span class="a" onclick="sf(this,'all')">全部</span><span onclick="sf(this,'清代')">清代</span><span onclick="sf(this,'民国')">民国</span><span onclick="sf(this,'新中国')">新中国</span></div>
   <div class="fl"><span onclick="sf(this,'中国内地')">内地</span><span onclick="sf(this,'香港')">香港</span><span onclick="sf(this,'澳门')">澳门</span><span onclick="sf(this,'台湾')">台湾</span><span onclick="sf(this,'海外')">海外</span></div>
+  <div class="fl"><span onclick="sf(this,'邮票')">邮票</span><span onclick="sf(this,'小型张')">小型张</span><span onclick="sf(this,'小版票')">小版票</span><span onclick="sf(this,'首日实寄封')">首日实寄封</span></div>
   <div class="sg" id="searchGrid"></div>
 </div>
 
@@ -365,8 +366,8 @@ function doSearch() {
   var a = document.querySelector('#search .fl .a');
   var cat = a ? a.textContent : '全部';
   var list = stamps.filter(function(s){
-    if (cat !== '全部' && s.category !== cat && s.dynasty !== cat && s.region !== cat) return false;
-    if (q && s.name.toLowerCase().indexOf(q) < 0 && s.dynasty.toLowerCase().indexOf(q) < 0 && s.region && s.region.toLowerCase().indexOf(q) < 0) return false;
+    if (cat !== '全部' && s.category !== cat && s.dynasty !== cat && s.region !== cat && s.stampType !== cat) return false;
+    if (q && s.name.toLowerCase().indexOf(q) < 0 && s.dynasty && s.dynasty.toLowerCase().indexOf(q) < 0 && s.region && s.region.toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
   var c = document.getElementById('searchGrid');
