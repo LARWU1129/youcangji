@@ -136,20 +136,23 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
   <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(this)">
   <div id="aiResult"></div>
   <div class="fm" id="saveForm" style="display:none">
-    <label>邮票名称</label><input id="f-name" oninput="showMarketLinks()">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div><label>年代/朝代</label><input id="f-dyn" placeholder="清代"></div>
+    <label>邮票名称 <span style="font-weight:400;color:var(--m)">（自动生成）</span></label>
+    <input id="f-name" readonly style="background:var(--s);color:var(--i);font-weight:600" oninput="showMarketLinks()">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><label>志号</label><input id="f-code" placeholder="如 T46" onchange="autoName()"></div>
+      <div><label>年代/朝代</label><input id="f-dyn" placeholder="清代" onchange="autoName()"></div>
       <div><label>发行年份</label><input id="f-year" placeholder="1878"></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div><label>面值</label><input id="f-face" placeholder="壹分银"></div>
-      <div><label>分类</label><select id="f-cat"><option>经典</option><option>纪特</option><option>民国</option><option>文革</option><option>生肖</option><option>普票</option></select></div>
+      <div><label>分类</label><select id="f-cat" onchange="autoName()"><option>经典</option><option>纪特</option><option>民国</option><option>文革</option><option>生肖</option><option>普票</option></select></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div><label>地区</label><select id="f-region"><option>中国内地</option><option>香港</option><option>澳门</option><option>台湾</option><option>海外</option></select></div>
-      <div><label>类型</label><select id="f-type"><option>邮票</option><option>小型张</option><option>小版票</option><option>首日实寄封</option></select></div>
+      <div><label>类型</label><select id="f-type" onchange="autoName()"><option>邮票</option><option>小型张</option><option>小版票</option><option>首日实寄封</option></select></div>
     </div>
-    <label>邮戳/寄出地 <span style="font-weight:400;color:var(--m)">（实寄封可见时填写）</span></label><input id="f-postmark" placeholder="如：上海、北京" oninput="showMarketLinks()">
+    <label>邮戳/寄出地 <span style="font-weight:400;color:var(--m)">（实寄封必填）</span></label>
+    <input id="f-postmark" placeholder="如：上海、北京" oninput="autoName();showMarketLinks()">
     <label>描述</label><textarea id="f-desc" placeholder="AI 识别结果描述"></textarea>
     <label>参考价格</label><input id="f-price" placeholder="如 ¥8,500">
     <div id="marketLinks" style="display:none;margin-bottom:12px">
@@ -223,30 +226,30 @@ var API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completion
 
 // ===== Stamp Database =====
 var STAMP_DB = [
-  {id:'db1',name:'大龙薄纸壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 薄纸 壹分银 云龙',desc:'中国第一套邮票，薄纸版壹分银，图案为云龙戏珠，寓意吉祥，由上海海关造册处印制。',price:'¥38,000'},
-  {id:'db2',name:'大龙阔边壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 阔边 壹分银 云龙',desc:'大龙邮票阔边版，纸质较厚，边框距离画面较宽，存量少于薄纸版。',price:'¥86,000'},
-  {id:'db3',name:'红印花小字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 小字 当壹圆 加盖',desc:'红印花加盖小字当壹圆，清代邮政珍邮，加盖小字当壹圆于红印花税票上。',price:'¥287,500'},
-  {id:'db4',name:'红印花大字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 大字 当壹圆 加盖',desc:'红印花加盖大字当壹圆，加盖字体较大，数量多于小字版。',price:'¥138,000'},
-  {id:'db5',name:'慈禧寿辰纪念票',dynasty:'清代',year:'1894',face:'贰分',cat:'经典',region:'中国内地',type:'邮票',kw:'慈禧 寿辰 万寿 纪念 五福',desc:'慈禧太后六十寿辰纪念邮票，中国第一套纪念邮票，俗称万寿票。',price:'¥15,000'},
-  {id:'db6',name:'龙马图邮票',dynasty:'清代',year:'1888',face:'壹佰文',cat:'经典',region:'台湾',type:'邮票',kw:'龙马 台湾 龙马图 马',desc:'台湾邮政总局发行的龙马图邮票，图案为龙马精神。',price:'¥12,000'},
-  {id:'db7',name:'上海寄香港实寄封',dynasty:'清代',year:'1902',face:'实寄封',cat:'经典',region:'中国内地',type:'首日实寄封',kw:'实寄封 上海 香港 蟠龙',desc:'上海工部局书信馆寄往香港的实寄封，贴蟠龙邮票2分。',price:'¥3,500'},
-  {id:'db8',name:'澳门皇冠邮票',dynasty:'清代',year:'1884',face:'10',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 皇冠 葡属 葡萄牙',desc:'澳门发行的皇冠图案邮票，葡萄牙殖民时期邮政用品。',price:'¥6,800'},
-  {id:'db9',name:'香港维多利亚女王像',dynasty:'清代',year:'1862',face:'8分',cat:'经典',region:'香港',type:'邮票',kw:'香港 维多利亚 女王 雕刻',desc:'香港最早发行的邮票之一，维多利亚女王侧面像，雕刻版印刷。',price:'¥15,000'},
-  {id:'db10',name:'孙中山像伦敦版',dynasty:'民国',year:'1931',face:'贰圆',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 伦敦版 雕刻 贰圆',desc:'伦敦德纳罗公司雕刻印刷的孙中山像邮票，线条细腻，印刷精良。',price:'¥6,900'},
-  {id:'db11',name:'孙中山像国父纪念',dynasty:'民国',year:'1940',face:'贰角',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 国父 纪念 全会',desc:'孙中山先生国父纪念邮票，民国时期发行。',price:'¥2,800'},
-  {id:'db12',name:'梅兰芳舞台艺术小型张',dynasty:'新中国',year:'1962',face:'8分+50分',cat:'纪特',region:'中国内地',type:'小型张',kw:'梅兰芳 贵妃醉酒 舞台艺术 小型张 纪94',desc:'梅兰芳舞台艺术小型张，纪94M，新中国第一枚小型张，JT票之王。',price:'¥218,500'},
-  {id:'db13',name:'全国山河一片红',dynasty:'新中国',year:'1968',face:'8分',cat:'文革',region:'中国内地',type:'邮票',kw:'全国山河一片红 文革 地图 撤销',desc:'新中国最著名珍邮，因地图绘制问题被紧急撤销，少量流出。',price:'¥1,035,000'},
-  {id:'db14',name:'庚申年猴票',dynasty:'新中国',year:'1980',face:'8分',cat:'生肖',region:'中国内地',type:'邮票',kw:'庚申 猴 生肖 黄永玉 第一枚',desc:'T46庚申年猴票，黄永玉设计，中国第一枚生肖邮票。',price:'¥12,650'},
-  {id:'db15',name:'香港回归纪念封',dynasty:'新中国',year:'1997',face:'纪念封',cat:'经典',region:'香港',type:'首日实寄封',kw:'香港回归 1997 纪念封 日戳',desc:'香港回归祖国纪念实寄封，加盖1997年7月1日香港日戳。',price:'¥5,200'},
-  {id:'db16',name:'澳门灯塔小型张',dynasty:'新中国',year:'1996',face:'5元',cat:'纪特',region:'澳门',type:'小型张',kw:'澳门 灯塔 东望洋 小型张',desc:'澳门灯塔主题小型张，画面为东望洋灯塔，色彩绚丽。',price:'¥1,800'},
-  {id:'db17',name:'牡丹亭小型张',dynasty:'新中国',year:'1984',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'牡丹亭 小型张 汤显祖 戏曲',desc:'T99M牡丹亭小型张，取材于汤显祖名作，设计典雅。',price:'¥2,500'},
-  {id:'db18',name:'台湾猴年生肖票',dynasty:'新中国',year:'1968',face:'5角',cat:'生肖',region:'台湾',type:'邮票',kw:'台湾 生肖 猴 猴年',desc:'台湾发行的生肖邮票，猴年图案，设计活泼。',price:'¥4,500'},
-  {id:'db19',name:'齐白石作品选',dynasty:'新中国',year:'1980',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'齐白石 国画 虾 绘画 艺术',desc:'T44齐白石作品选邮票，全套16枚，选取齐白石代表画作。',price:'¥8,500'},
-  {id:'db20',name:'从小爱科学小型张',dynasty:'新中国',year:'1979',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'科学 天文 航模 小爱 小型张',desc:'T41M从小爱科学小型张，图案为少年儿童科技活动。',price:'¥28,500'},
-  {id:'db21',name:'金鱼邮票',dynasty:'新中国',year:'1960',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'金鱼 观赏鱼 水生 动物',desc:'特38金鱼邮票，全套12枚，展现多种名贵金鱼品种。',price:'¥12,800'},
-  {id:'db22',name:'黄山风景',dynasty:'新中国',year:'1963',face:'多种',cat:'纪特',region:'中国内地',type:'邮票',kw:'黄山 风景 迎客松 云海 奇峰',desc:'特57黄山风景邮票，全套16枚，展现黄山四绝奇观。',price:'¥32,000'},
-  {id:'db23',name:'香港经典邮票小型张',dynasty:'新中国',year:'1991',face:'5元',cat:'经典',region:'香港',type:'小型张',kw:'香港 经典 维多利亚 港',desc:'香港经典邮票小型张，画面为维多利亚港景色。',price:'¥1,200'},
-  {id:'db24',name:'澳门妈祖庙邮票',dynasty:'新中国',year:'1994',face:'3元',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 妈祖 庙宇 建筑 宗教',desc:'澳门妈祖庙邮票，展现澳门标志性建筑妈祖阁。',price:'¥800'},
+  {id:'db1',code:'海关大龙',name:'薄纸壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 薄纸 壹分银 云龙',desc:'中国第一套邮票，薄纸版壹分银，图案为云龙戏珠，寓意吉祥，由上海海关造册处印制。',price:'¥38,000'},
+  {id:'db2',code:'海关大龙',name:'阔边壹分银',dynasty:'清代',year:'1878',face:'壹分银',cat:'经典',region:'中国内地',type:'邮票',kw:'大龙 阔边 壹分银 云龙',desc:'大龙邮票阔边版，纸质较厚，边框距离画面较宽，存量少于薄纸版。',price:'¥86,000'},
+  {id:'db3',code:'红印花',name:'小字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 小字 当壹圆 加盖',desc:'红印花加盖小字当壹圆，清代邮政珍邮，加盖小字当壹圆于红印花税票上。',price:'¥287,500'},
+  {id:'db4',code:'红印花',name:'大字当壹圆',dynasty:'清代',year:'1897',face:'壹角银',cat:'经典',region:'中国内地',type:'邮票',kw:'红印花 大字 当壹圆 加盖',desc:'红印花加盖大字当壹圆，加盖字体较大，数量多于小字版。',price:'¥138,000'},
+  {id:'db5',code:'慈禧万寿',name:'初版贰分',dynasty:'清代',year:'1894',face:'贰分',cat:'经典',region:'中国内地',type:'邮票',kw:'慈禧 寿辰 万寿 纪念 五福',desc:'慈禧太后六十寿辰纪念邮票，中国第一套纪念邮票，俗称万寿票。',price:'¥15,000'},
+  {id:'db6',code:'台湾龙马',name:'壹佰文',dynasty:'清代',year:'1888',face:'壹佰文',cat:'经典',region:'台湾',type:'邮票',kw:'龙马 台湾 龙马图 马',desc:'台湾邮政总局发行的龙马图邮票，图案为龙马精神。',price:'¥12,000'},
+  {id:'db7',code:'蟠龙',name:'上海寄香港',dynasty:'清代',year:'1902',face:'2分',cat:'经典',region:'中国内地',type:'首日实寄封',kw:'实寄封 上海 香港 蟠龙',desc:'上海工部局书信馆寄往香港的实寄封，贴蟠龙邮票2分。',price:'¥3,500'},
+  {id:'db8',code:'澳门皇冠',name:'10reis',dynasty:'清代',year:'1884',face:'10',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 皇冠 葡属 葡萄牙',desc:'澳门发行的皇冠图案邮票，葡萄牙殖民时期邮政用品。',price:'¥6,800'},
+  {id:'db9',code:'香港维多利亚',name:'8分',dynasty:'清代',year:'1862',face:'8分',cat:'经典',region:'香港',type:'邮票',kw:'香港 维多利亚 女王 雕刻',desc:'香港最早发行的邮票之一，维多利亚女王侧面像，雕刻版印刷。',price:'¥15,000'},
+  {id:'db10',code:'伦敦版',name:'孙中山像贰圆',dynasty:'民国',year:'1931',face:'贰圆',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 伦敦版 雕刻 贰圆',desc:'伦敦德纳罗公司雕刻印刷的孙中山像邮票，线条细腻，印刷精良。',price:'¥6,900'},
+  {id:'db11',code:'国父纪念',name:'孙中山像贰角',dynasty:'民国',year:'1940',face:'贰角',cat:'民国',region:'中国内地',type:'邮票',kw:'孙中山 国父 纪念 全会',desc:'孙中山先生国父纪念邮票，民国时期发行。',price:'¥2,800'},
+  {id:'db12',code:'纪94M',name:'梅兰芳舞台艺术',dynasty:'新中国',year:'1962',face:'8分+50分',cat:'纪特',region:'中国内地',type:'小型张',kw:'梅兰芳 贵妃醉酒 舞台艺术 小型张 纪94',desc:'梅兰芳舞台艺术小型张，纪94M，新中国第一枚小型张，JT票之王。',price:'¥218,500'},
+  {id:'db13',code:'文革',name:'全国山河一片红',dynasty:'新中国',year:'1968',face:'8分',cat:'文革',region:'中国内地',type:'邮票',kw:'全国山河一片红 文革 地图 撤销',desc:'新中国最著名珍邮，因地图绘制问题被紧急撤销，少量流出。',price:'¥1,035,000'},
+  {id:'db14',code:'T46',name:'庚申年猴票',dynasty:'新中国',year:'1980',face:'8分',cat:'生肖',region:'中国内地',type:'邮票',kw:'庚申 猴 生肖 黄永玉 第一枚',desc:'T46庚申年猴票，黄永玉设计，中国第一枚生肖邮票。',price:'¥12,650'},
+  {id:'db15',code:'香港回归',name:'纪念封',dynasty:'新中国',year:'1997',face:'纪念封',cat:'经典',region:'香港',type:'首日实寄封',kw:'香港回归 1997 纪念封 日戳',desc:'香港回归祖国纪念实寄封，加盖1997年7月1日香港日戳。',price:'¥5,200'},
+  {id:'db16',code:'澳门灯塔',name:'小型张',dynasty:'新中国',year:'1996',face:'5元',cat:'纪特',region:'澳门',type:'小型张',kw:'澳门 灯塔 东望洋 小型张',desc:'澳门灯塔主题小型张，画面为东望洋灯塔，色彩绚丽。',price:'¥1,800'},
+  {id:'db17',code:'T99M',name:'牡丹亭',dynasty:'新中国',year:'1984',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'牡丹亭 小型张 汤显祖 戏曲',desc:'T99M牡丹亭小型张，取材于汤显祖名作，设计典雅。',price:'¥2,500'},
+  {id:'db18',code:'台湾生肖',name:'猴年',dynasty:'新中国',year:'1968',face:'5角',cat:'生肖',region:'台湾',type:'邮票',kw:'台湾 生肖 猴 猴年',desc:'台湾发行的生肖邮票，猴年图案，设计活泼。',price:'¥4,500'},
+  {id:'db19',code:'T44',name:'齐白石作品选',dynasty:'新中国',year:'1980',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'齐白石 国画 虾 绘画 艺术',desc:'T44齐白石作品选邮票，全套16枚，选取齐白石代表画作。',price:'¥8,500'},
+  {id:'db20',code:'T41M',name:'从小爱科学',dynasty:'新中国',year:'1979',face:'2元',cat:'纪特',region:'中国内地',type:'小型张',kw:'科学 天文 航模 小爱 小型张',desc:'T41M从小爱科学小型张，图案为少年儿童科技活动。',price:'¥28,500'},
+  {id:'db21',code:'特38',name:'金鱼',dynasty:'新中国',year:'1960',face:'8分',cat:'纪特',region:'中国内地',type:'邮票',kw:'金鱼 观赏鱼 水生 动物',desc:'特38金鱼邮票，全套12枚，展现多种名贵金鱼品种。',price:'¥12,800'},
+  {id:'db22',code:'特57',name:'黄山风景',dynasty:'新中国',year:'1963',face:'多种',cat:'纪特',region:'中国内地',type:'邮票',kw:'黄山 风景 迎客松 云海 奇峰',desc:'特57黄山风景邮票，全套16枚，展现黄山四绝奇观。',price:'¥32,000'},
+  {id:'db23',code:'香港经典',name:'维多利亚港',dynasty:'新中国',year:'1991',face:'5元',cat:'经典',region:'香港',type:'小型张',kw:'香港 经典 维多利亚 港',desc:'香港经典邮票小型张，画面为维多利亚港景色。',price:'¥1,200'},
+  {id:'db24',code:'澳门妈祖',name:'妈祖阁',dynasty:'新中国',year:'1994',face:'3元',cat:'经典',region:'澳门',type:'邮票',kw:'澳门 妈祖 庙宇 建筑 宗教',desc:'澳门妈祖庙邮票，展现澳门标志性建筑妈祖阁。',price:'¥800'},
 ];
 
 function matchStamp(extracted) {
@@ -256,7 +259,7 @@ function matchStamp(extracted) {
   // Score each stamp in DB
   var scored = STAMP_DB.map(function(s) {
     var score = 0;
-    var dbKw = s.kw.toLowerCase() + ' ' + s.name.toLowerCase() + ' ' + s.dynasty + ' ' + s.face;
+    var dbKw = s.kw.toLowerCase() + ' ' + s.name.toLowerCase() + ' ' + s.dynasty + ' ' + s.face + ' ' + (s.code||'').toLowerCase();
     words.forEach(function(w) {
       if (dbKw.indexOf(w) >= 0) score += 10;
     });
@@ -340,7 +343,8 @@ async function callAI(base64Image) {
     var matched = matchStamp(extracted);
     if (matched) {
       return {
-        name: matched.name,
+        code: matched.code || '',
+        name: matched.code ? matched.code + ' ' + matched.name : matched.name,
         dynasty: matched.dynasty,
         year: matched.year,
         faceValue: matched.face,
@@ -403,6 +407,7 @@ async function recognizeStamp(base64) {
   var data = await callAI(base64);
 
   if (data) {
+    document.getElementById('f-code').value = data.code || '';
     document.getElementById('f-name').value = data.name || '';
     document.getElementById('f-dyn').value = data.dynasty || '';
     document.getElementById('f-year').value = data.year || '';
@@ -414,6 +419,7 @@ async function recognizeStamp(base64) {
     if (data.stampType) document.getElementById('f-type').value = data.stampType;
     if (data.postmark) document.getElementById('f-postmark').value = data.postmark;
 
+    autoName();
     showMarketLinks();
     var hint = data.matchHint || '✅ AI 识别完成';
     var bgColor = data.source === 'database' ? '#E8F5E9' : '#FFF3E0';
@@ -445,9 +451,38 @@ function showMarketLinks() {
   document.getElementById('marketLinks').style.display = name ? 'block' : 'none';
 }
 
+function autoName() {
+  var code = document.getElementById('f-code').value.trim();
+  var name = document.getElementById('f-name').value.trim();
+  var type = document.getElementById('f-type').value;
+  var postmark = document.getElementById('f-postmark').value.trim();
+
+  // Extract the base name (remove code prefix if exists)
+  var baseName = name;
+
+  if (type === '首日实寄封' || type === '首日封') {
+    // 志号 + 名称 + 寄出地
+    var parts = [];
+    if (code) parts.push(code);
+    if (baseName && baseName.indexOf(code) !== 0) parts.push(baseName);
+    else if (!baseName) parts.push('待定');
+    if (postmark) parts.push(postmark);
+    document.getElementById('f-name').value = parts.join(' ');
+  } else {
+    // 志号 + 名称
+    var parts2 = [];
+    if (code) parts2.push(code);
+    if (baseName && baseName.indexOf(code) !== 0) parts2.push(baseName);
+    else if (!baseName) parts2.push('待定');
+    document.getElementById('f-name').value = parts2.join(' ');
+  }
+}
+
 function saveStamp() {
+  autoName();
   var s = {
     id: Date.now().toString(),
+    code: document.getElementById('f-code').value.trim(),
     name: document.getElementById('f-name').value.trim(),
     dynasty: document.getElementById('f-dyn').value.trim(),
     year: document.getElementById('f-year').value.trim(),
@@ -552,7 +587,7 @@ function showDetail(id) {
   var html = '';
   if (s.image) html += '<img src="data:image/jpeg;base64,'+s.image+'" class="preview-img" style="margin:8px 16px;width:calc(100%-32px)">';
   html += '<div class="dhdr"><h2>'+(s.name||'未知')+'</h2><span style="color:var(--m);font-size:12px">'+s.createdAt+'</span></div>';
-  html += '<div class="dg"><div class="di"><div class="l">年代</div><div class="v">'+(s.dynasty||'-')+'</div></div><div class="di"><div class="l">年份</div><div class="v">'+(s.year||'-')+'</div></div><div class="di"><div class="l">面值</div><div class="v">'+(s.faceValue||'-')+'</div></div><div class="di"><div class="l">分类</div><div class="v">'+(s.category||'-')+'</div></div><div class="di"><div class="l">地区</div><div class="v">'+(s.region||'-')+'</div></div><div class="di"><div class="l">类型</div><div class="v">'+(s.stampType||'-')+'</div></div>'+(s.postmark?'<div class="di"><div class="l">邮戳/寄出地</div><div class="v">'+s.postmark+'</div></div>':'')+'</div>';
+  html += '<div class="dg">'+(s.code?'<div class="di"><div class="l">志号</div><div class="v">'+s.code+'</div></div>':'')+'<div class="di"><div class="l">年代</div><div class="v">'+(s.dynasty||'-')+'</div></div><div class="di"><div class="l">年份</div><div class="v">'+(s.year||'-')+'</div></div><div class="di"><div class="l">面值</div><div class="v">'+(s.faceValue||'-')+'</div></div><div class="di"><div class="l">分类</div><div class="v">'+(s.category||'-')+'</div></div><div class="di"><div class="l">地区</div><div class="v">'+(s.region||'-')+'</div></div><div class="di"><div class="l">类型</div><div class="v">'+(s.stampType||'-')+'</div></div>'+(s.postmark?'<div class="di"><div class="l">邮戳/寄出地</div><div class="v">'+s.postmark+'</div></div>':'')+'</div>';
   if (s.description) html += '<div class="db"><h3>描述</h3><p>'+s.description+'</p></div>';
   if (s.price) html += '<div class="db"><h3>参考价格</h3><p style="color:var(--d);font-weight:600;font-size:16px">'+s.price+'</p></div>';
   html += '<div style="padding:0 16px 16px"><button class="btn" style="background:var(--d);color:#FFF;border:none;padding:10px;border-radius:8px;width:100%;cursor:pointer" onclick="deleteStamp(\''+s.id+'\')">删除</button></div>';
