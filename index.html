@@ -793,55 +793,28 @@ function clearData() {
 updateStats();
 renderAll();
 
-// PWA install - aggressive update
+// PWA install
 var swReg = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js?v=5').then(function(reg) {
+    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
       swReg = reg;
-
-      // Check if there's a waiting service worker (already updated but not active)
-      if (reg.waiting) {
-        showUpdateNotice();
-      }
-
-      // Listen for new SW installing
       reg.addEventListener('updatefound', function() {
-        var sw = reg.installing;
-        sw.addEventListener('statechange', function() {
-          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            // New SW installed but waiting to activate
-            showUpdateNotice();
-          }
-          if (sw.state === 'activated') {
-            location.reload();
-          }
-        });
+        showUpdateNotice();
       });
     });
-
-    // Listen for controller change (SW took over)
     navigator.serviceWorker.addEventListener('controllerchange', function() {
-      location.reload();
+      window.location.reload();
     });
   });
 }
-
 function showUpdateNotice() {
-  var notice = document.getElementById('updateNotice');
-  var status = document.getElementById('cacheStatus');
-  if (notice) notice.style.display = 'inline';
-  if (status) status.textContent = '可更新';
+  var n = document.getElementById('updateNotice');
+  if (n) n.style.display = 'inline';
 }
-
 function checkUpdate() {
-  if (swReg) {
-    swReg.update().then(function() {
-      toast('检查更新中...');
-    });
-  } else {
-    toast('Service Worker 不可用');
-  }
+  if (swReg) { swReg.update(); toast('检查更新...'); }
+  else toast('Service Worker 不可用');
 }
 
 // Install banner
@@ -869,19 +842,15 @@ function showInstallBanner(type) {
   };
 }
 
-// Show install guide only in browser (not standalone PWA)
-var isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-if (!isStandalone) {
-  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+// Show install tip in browser after 8s
+var _st = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+if (!_st) {
   setTimeout(function() {
     if (!document.getElementById('installBanner')) {
-      if (isIOS) {
-        showInstallBanner('ios');
-      } else if (!dp) {
-        showInstallBanner('ios');
-      }
+      var _ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      showInstallBanner(_ios ? 'ios' : 'ios');
     }
-  }, 6000);
+  }, 8000);
 }
 </script>
 </body>
