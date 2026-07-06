@@ -140,6 +140,10 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
       <div><label>面值</label><input id="f-face" placeholder="壹分银"></div>
       <div><label>分类</label><select id="f-cat"><option>经典</option><option>纪特</option><option>民国</option><option>文革</option><option>生肖</option><option>普票</option></select></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label>地区</label><select id="f-region"><option>中国内地</option><option>香港</option><option>澳门</option><option>台湾</option><option>海外</option></select></div>
+      <div><label>类型</label><select id="f-type"><option>邮票</option><option>小型张</option><option>小版票</option><option>首日实寄封</option></select></div>
+    </div>
     <label>描述</label><textarea id="f-desc" placeholder="AI 识别结果描述"></textarea>
     <label>参考价格</label><input id="f-price" placeholder="如 ¥8,500">
     <button class="btn pri" onclick="saveStamp()" style="margin-top:12px">保存到收藏</button>
@@ -154,8 +158,9 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
 
 <div class="p" id="search">
   <div class="tb"><h1>查询</h1><div style="width:36px"></div></div>
-  <div class="sb"><input id="sq" placeholder="搜索名称、朝代、分类..." oninput="doSearch()"></div>
+  <div class="sb"><input id="sq" placeholder="搜索名称、朝代..." oninput="doSearch()"></div>
   <div class="fl"><span class="a" onclick="sf(this,'all')">全部</span><span onclick="sf(this,'清代')">清代</span><span onclick="sf(this,'民国')">民国</span><span onclick="sf(this,'新中国')">新中国</span></div>
+  <div class="fl"><span onclick="sf(this,'中国内地')">内地</span><span onclick="sf(this,'香港')">香港</span><span onclick="sf(this,'澳门')">澳门</span><span onclick="sf(this,'台湾')">台湾</span><span onclick="sf(this,'海外')">海外</span></div>
   <div class="sg" id="searchGrid"></div>
 </div>
 
@@ -212,7 +217,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是一个邮票鉴定专家。请识别这张邮票图片，输出JSON格式：{"name":"邮票名称","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","description":"详细描述(材质/印刷/历史背景/收藏价值)","estimatedPrice":"估计市场参考价格"}。如果无法识别，请输出你最好的推测。只输出JSON，不要其他文字。'},
+            {type:'text', text:'你是一个邮票鉴定专家。请识别这张邮票图片，输出JSON格式：{"name":"邮票名称","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","description":"详细描述(材质/印刷/历史背景/收藏价值)","estimatedPrice":"估计市场参考价格"}。如果无法识别，请输出你最好的推测。只输出JSON，不要其他文字。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -267,6 +272,8 @@ async function recognizeStamp(base64) {
     document.getElementById('f-desc').value = data.description || '';
     document.getElementById('f-price').value = data.estimatedPrice || '';
     if (data.category) document.getElementById('f-cat').value = data.category;
+    if (data.region) document.getElementById('f-region').value = data.region;
+    if (data.stampType) document.getElementById('f-type').value = data.stampType;
 
     result.innerHTML = '<div style="background:#E8F5E9;color:#2E7D32;padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">✅ AI 识别完成，请确认并保存</div>';
     document.getElementById('saveForm').style.display = 'block';
@@ -284,6 +291,8 @@ function saveStamp() {
     year: document.getElementById('f-year').value.trim(),
     faceValue: document.getElementById('f-face').value.trim(),
     category: document.getElementById('f-cat').value,
+    region: document.getElementById('f-region').value,
+    stampType: document.getElementById('f-type').value,
     description: document.getElementById('f-desc').value.trim(),
     price: document.getElementById('f-price').value.trim(),
     image: window._currentImage || '',
@@ -356,8 +365,8 @@ function doSearch() {
   var a = document.querySelector('#search .fl .a');
   var cat = a ? a.textContent : '全部';
   var list = stamps.filter(function(s){
-    if (cat !== '全部' && s.category !== cat && s.dynasty !== cat) return false;
-    if (q && s.name.toLowerCase().indexOf(q) < 0 && s.dynasty.toLowerCase().indexOf(q) < 0 && s.category.toLowerCase().indexOf(q) < 0) return false;
+    if (cat !== '全部' && s.category !== cat && s.dynasty !== cat && s.region !== cat) return false;
+    if (q && s.name.toLowerCase().indexOf(q) < 0 && s.dynasty.toLowerCase().indexOf(q) < 0 && s.region && s.region.toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
   var c = document.getElementById('searchGrid');
@@ -379,7 +388,7 @@ function showDetail(id) {
   var html = '';
   if (s.image) html += '<img src="data:image/jpeg;base64,'+s.image+'" class="preview-img" style="margin:8px 16px;width:calc(100%-32px)">';
   html += '<div class="dhdr"><h2>'+(s.name||'未知')+'</h2><span style="color:var(--m);font-size:12px">'+s.createdAt+'</span></div>';
-  html += '<div class="dg"><div class="di"><div class="l">年代</div><div class="v">'+(s.dynasty||'-')+'</div></div><div class="di"><div class="l">年份</div><div class="v">'+(s.year||'-')+'</div></div><div class="di"><div class="l">面值</div><div class="v">'+(s.faceValue||'-')+'</div></div><div class="di"><div class="l">分类</div><div class="v">'+(s.category||'-')+'</div></div></div>';
+  html += '<div class="dg"><div class="di"><div class="l">年代</div><div class="v">'+(s.dynasty||'-')+'</div></div><div class="di"><div class="l">年份</div><div class="v">'+(s.year||'-')+'</div></div><div class="di"><div class="l">面值</div><div class="v">'+(s.faceValue||'-')+'</div></div><div class="di"><div class="l">分类</div><div class="v">'+(s.category||'-')+'</div></div><div class="di"><div class="l">地区</div><div class="v">'+(s.region||'-')+'</div></div><div class="di"><div class="l">类型</div><div class="v">'+(s.stampType||'-')+'</div></div></div>';
   if (s.description) html += '<div class="db"><h3>描述</h3><p>'+s.description+'</p></div>';
   if (s.price) html += '<div class="db"><h3>参考价格</h3><p style="color:var(--d);font-weight:600;font-size:16px">'+s.price+'</p></div>';
   html += '<div style="padding:0 16px 16px"><button class="btn" style="background:var(--d);color:#FFF;border:none;padding:10px;border-radius:8px;width:100%;cursor:pointer" onclick="deleteStamp(\''+s.id+'\')">删除</button></div>';
