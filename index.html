@@ -345,7 +345,7 @@ async function callAI(base64Image) {
         model: 'qwen3.7-plus',
         messages: [{
           role: 'user',
-          content: '你是中国邮票知识库。根据以下信息输出JSON：{"name":"邮票完整官方名称","code":"志号","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"图案上的具体文物(100%确定才写具体名称，不确定写类别)","patternDescription":"文物出处、年代、文化意义的详细解读(150字)","description":"邮票发行信息","estimatedPrice":"参考价格"}。参考信息：'+knowledgeQuery+'。如果是系列邮票（如中国篆刻多组），根据画面内容和首日日期判断具体哪一组，志号要精确首日日期可用来查当天发行的邮票志号。exactArtifact如果是简牍类，区分睡虎地秦简/里耶秦简/郭店楚简。只输出JSON。'
+          content: '根据志号输出JSON：{"name":"名称","code":"志号","dynasty":"朝代","year":"年份","faceValue":"面值","category":"分类","region":"地区","stampType":"类型","exactArtifact":"文物(确定才写)","patternDescription":"图案文化背景(80字)","description":"邮票信息","estimatedPrice":"价格"}。参考：'+knowledgeQuery+'。志号优先使用，确定的信息才写。只输出JSON。'
         }],
         max_tokens:1024,
         response_format:{type:'json_object'}
