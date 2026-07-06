@@ -317,7 +317,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是中国邮票专家。仔细看这张图片，一步完成识别。注意：如果是系列邮票（如中国篆刻、西游记、生肖等），每套志号不同，务必根据画面细节判断是第几组。输出JSON：{"itemType":"物品类型(stamp=邮票/cover=实寄封)","name":"邮票完整官方名称(含组别，如中国篆刻第三组，不含志号)","code":"志号(要精确，如2025-25，根据年份和画面判断具体哪一组)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封必填，注意环形文字变形，东≠齐、昌≠冒、湖≠沽)","postmarkDate":"邮戳上的完整日期(YYYY-MM-DD，首日封首日日期，用于精确判断志号)","exactArtifact":"邮票图案上的具体文物名称(如睡虎地秦简/里耶秦简/郭店楚简，精确到哪一批)","patternDesc":"文物背景简解(50字)","description":"邮票基本信息","estimatedPrice":"参考价格"}。一次完成所有识别。只输出JSON。'},
+            {type:'text', text:'你是中国邮票专家。仔细看这张图片，一步完成识别。注意：如果是系列邮票（如中国篆刻、西游记、生肖等），每套志号不同，务必根据画面细节判断是第几组。输出JSON：{"itemType":"物品类型(stamp=邮票/cover=实寄封)","name":"邮票完整官方名称(含组别，如中国篆刻第三组，不含志号)","code":"志号(要精确，如2025-25(5-3)，根据面值和画面判断全套枚数和本枚位置)","stampPosition":"全套枚数和本枚位置(如5-3表示全套5枚这是第3枚)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封必填，注意环形文字变形，东≠齐、昌≠冒、湖≠沽)","postmarkDate":"邮戳上的完整日期(YYYY-MM-DD，首日封首日日期，用于精确判断志号)","exactArtifact":"邮票图案上的具体文物名称(如睡虎地秦简/里耶秦简/郭店楚简，精确到哪一批)","patternDesc":"文物背景简解(50字)","description":"邮票基本信息","estimatedPrice":"参考价格"}。一次完成所有识别。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -335,6 +335,8 @@ async function callAI(base64Image) {
     var knowledgeQuery = '邮票：'+resultName+'，志号：'+resultCode+'，年代：'+(info.dynasty||'')+'，年份：'+(info.year||'')+'，类型：'+(info.stampType||'')+'，文物：'+(info.exactArtifact||'');
     if (info.postmark) knowledgeQuery += '，邮戳：'+info.postmark;
     if (info.postmarkDate) knowledgeQuery += '，首日日期：'+info.postmarkDate+'（此为邮票发行首日，可据此查询当天发行的邮票志号）';
+    if (info.stampPosition) knowledgeQuery += "，全套枚序："+info.stampPosition;
+    if (info.postmarkDate) knowledgeQuery += "，首日日期："+info.postmarkDate+"（首日日期可查当天发行的邮票志号）";
 
     var resp3 = await fetch(API_URL, {
       method: 'POST',
