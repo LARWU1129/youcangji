@@ -860,21 +860,20 @@ function showInstallBanner(type) {
   };
 }
 
-// iOS: show install tip after 3 seconds if not installed
-var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+// Show install guide only in browser (not standalone PWA)
 var isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 if (!isStandalone) {
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   setTimeout(function() {
-    if (!document.getElementById('installBanner') && !dp) {
-      if (isIOS) showInstallBanner('ios');
+    if (!document.getElementById('installBanner')) {
+      if (isIOS) {
+        showInstallBanner('ios');
+      } else if (!dp) {
+        showInstallBanner('ios');
+      }
     }
-  }, 5000);
+  }, 6000);
 }
-setTimeout(function() {
-  if (!document.getElementById('installBanner') && !dp && !isIOS) {
-    showInstallBanner('ios');
-  }
-}, 8000);
 </script>
 </body>
 </html>
