@@ -136,7 +136,7 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
   <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(this)">
   <div id="aiResult"></div>
   <div class="fm" id="saveForm" style="display:none">
-    <label>邮票名称</label><input id="f-name">
+    <label>邮票名称</label><input id="f-name" oninput="showMarketLinks()">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div><label>年代/朝代</label><input id="f-dyn" placeholder="清代"></div>
       <div><label>发行年份</label><input id="f-year" placeholder="1878"></div>
@@ -151,6 +151,14 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
     </div>
     <label>描述</label><textarea id="f-desc" placeholder="AI 识别结果描述"></textarea>
     <label>参考价格</label><input id="f-price" placeholder="如 ¥8,500">
+    <div id="marketLinks" style="display:none;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--m);margin-bottom:6px">🔍 在市场中搜索此邮票：</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="searchMarket('taobao')">淘宝</button>
+        <button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="searchMarket('weidian')">微店</button>
+        <button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="searchMarket('paimai')">拍卖</button>
+      </div>
+    </div>
     <button class="btn pri" onclick="saveStamp()" style="margin-top:12px">保存到收藏</button>
     <button class="btn out" onclick="retake()" style="margin-top:8px">重新拍照</button>
   </div>
@@ -374,6 +382,7 @@ async function recognizeStamp(base64) {
     if (data.region) document.getElementById('f-region').value = data.region;
     if (data.stampType) document.getElementById('f-type').value = data.stampType;
 
+    showMarketLinks();
     var hint = data.matchHint || '✅ AI 识别完成';
     var bgColor = data.source === 'database' ? '#E8F5E9' : '#FFF3E0';
     var textColor = data.source === 'database' ? '#2E7D32' : '#E65100';
@@ -383,6 +392,22 @@ async function recognizeStamp(base64) {
     result.innerHTML = '<div style="background:#FFF3E0;color:#E65100;padding:10px 16px;margin:8px 16px;border-radius:8px;font-size:13px">⚠️ AI 识别失败，请手动输入信息</div>';
     document.getElementById('saveForm').style.display = 'block';
   }
+}
+
+function searchMarket(type) {
+  var name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('请先输入邮票名称'); return; }
+  var urls = {
+    taobao: 'https://s.taobao.com/search?q=' + encodeURIComponent(name + ' 邮票'),
+    weidian: 'https://shopsearch.weidian.com/?keyword=' + encodeURIComponent(name + ' 邮票'),
+    paimai: 'https://s.taobao.com/search?q=' + encodeURIComponent(name + ' 邮票 拍卖') + '&s=0',
+  };
+  window.open(urls[type], '_blank');
+}
+
+function showMarketLinks() {
+  var name = document.getElementById('f-name').value.trim();
+  document.getElementById('marketLinks').style.display = name ? 'block' : 'none';
 }
 
 function saveStamp() {
