@@ -317,7 +317,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是中国邮票专家。仔细看这张图片，一步完成识别。注意：如果是系列邮票（如中国篆刻、西游记、生肖等），每套志号不同，务必根据画面细节判断是第几组。输出JSON：{"itemType":"物品类型(stamp=邮票/cover=实寄封)","name":"邮票完整官方名称(含组别，如中国篆刻第三组，不含志号)","code":"志号(要精确，如2025-25(5-3)，根据面值和画面判断全套枚数和本枚位置)","stampPosition":"全套枚数和本枚位置(如5-3表示全套5枚这是第3枚)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封必填，注意环形文字变形，东≠齐、昌≠冒、湖≠沽)","postmarkDate":"邮戳上的完整日期(YYYY-MM-DD，首日封首日日期，用于精确判断志号)","exactArtifact":"邮票图案上的具体文物名称(如睡虎地秦简/里耶秦简/郭店楚简，精确到哪一批)","patternDesc":"文物背景简解(50字)","description":"邮票基本信息","estimatedPrice":"参考价格"}。一次完成所有识别。只输出JSON。'},
+            {type:'text', text:'你是中国邮票专家。仔细看这张图片，一步完成识别。注意：如果是系列邮票（如中国篆刻、西游记、生肖等），每套志号不同，务必根据画面细节判断是第几组。输出JSON：{"itemType":"物品类型(stamp=邮票/cover=实寄封)","name":"邮票完整官方名称(含组别，如中国篆刻第三组，不含志号)","code":"志号(要精确，如2025-25(5-3)，根据面值和画面判断全套枚数和本枚位置)","stampPosition":"全套枚数和本枚位置(如5-3表示全套5枚这是第3枚)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","postmark":"邮戳上的地名(实寄封必填，注意环形文字变形，东≠齐、昌≠冒、湖≠沽)","postmarkDate":"邮戳上的完整日期(YYYY-MM-DD，首日封首日日期，用于精确判断志号)","exactArtifact":"图案上的具体文物名称(只有100%确定时才写具体名称，不确定就写类别如"古代简牍""青铜器""名画"，不要编造具体的出土文物)","patternDesc":"文物背景简解(50字)","description":"邮票基本信息","estimatedPrice":"参考价格"}。一次完成所有识别。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -345,7 +345,7 @@ async function callAI(base64Image) {
         model: 'qwen3.7-plus',
         messages: [{
           role: 'user',
-          content: '你是中国邮票知识库。根据以下信息输出JSON：{"name":"邮票完整官方名称","code":"志号","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"邮票图案上的具体文物名称(精确到哪一批)","patternDescription":"文物出处、年代、文化意义的详细解读(150字)","description":"邮票发行信息","estimatedPrice":"参考价格"}。参考信息：'+knowledgeQuery+'。如果是系列邮票（如中国篆刻多组），根据画面内容和首日日期判断具体哪一组，志号要精确首日日期可用来查当天发行的邮票志号。exactArtifact如果是简牍类，区分睡虎地秦简/里耶秦简/郭店楚简。只输出JSON。'
+          content: '你是中国邮票知识库。根据以下信息输出JSON：{"name":"邮票完整官方名称","code":"志号","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"图案上的具体文物(100%确定才写具体名称，不确定写类别)","patternDescription":"文物出处、年代、文化意义的详细解读(150字)","description":"邮票发行信息","estimatedPrice":"参考价格"}。参考信息：'+knowledgeQuery+'。如果是系列邮票（如中国篆刻多组），根据画面内容和首日日期判断具体哪一组，志号要精确首日日期可用来查当天发行的邮票志号。exactArtifact如果是简牍类，区分睡虎地秦简/里耶秦简/郭店楚简。只输出JSON。'
         }],
         max_tokens:1024,
         response_format:{type:'json_object'}
@@ -377,6 +377,20 @@ async function callAI(base64Image) {
 
   } catch(e) {
     console.error(e);
+    // Phase 3 failed, return Phase 1 results if available
+    if (typeof info !== 'undefined' && info) {
+      info.source = 'phase1_only';
+      info.matchHint = '⚠️ 基础识别（知识库查询超时）';
+      info.postmark = info.postmark || '';
+      // Build description from Phase 1 data
+      var p1Parts = [];
+      if (info.itemType === 'cover') p1Parts.push('【类型】实寄封');
+      if (info.exactArtifact) p1Parts.push('【文物/图案】' + info.exactArtifact);
+      if (info.patternDesc) p1Parts.push('【文化背景】' + info.patternDesc);
+      if (info.description) p1Parts.push('【概况】' + info.description);
+      info.description = p1Parts.join('\n') || info.description || '';
+      return info;
+    }
     return null;
   } finally {
     showLoad(false);
