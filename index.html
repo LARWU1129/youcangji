@@ -400,18 +400,6 @@ async function callAI(base64Image) {
     if (knowledge.description) descParts.push('【概况】' + knowledge.description);
     knowledge.description = descParts.join('\n') || knowledge.description;
     return knowledge;
-      dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
-      year: (stampInfo && stampInfo.year) || info.year || '',
-      faceValue: (stampInfo && stampInfo.faceValue) || '',
-      category: (stampInfo && stampInfo.category) || '',
-      region: info.postmark || '',
-      stampType: info.itemType === 'cover' ? '首日实寄封' : '邮票',
-      postmark: info.postmark || '',
-      description: (stampInfo && stampInfo.stampDesc) || (info.texts || ''),
-      estimatedPrice: '',
-      source: 'ai_guess',
-      matchHint: '⚠️ AI推测'
-    };
 
   } catch(e) {
     console.error(e);
