@@ -284,6 +284,8 @@ function matchStamp(extracted) {
     words.forEach(function(w) {
       if (dbKw.indexOf(w) >= 0) score += 10;
     });
+    // Bonus for matching code
+    if (extracted.code && s.code && s.code.toLowerCase().indexOf(extracted.code.toLowerCase()) >= 0) score += 25;
     // Bonus for matching dynasty
     if (extracted.dynasty && s.dynasty.indexOf(extracted.dynasty) >= 0) score += 20;
     // Bonus for matching year range
@@ -313,7 +315,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","postmark":"邮戳上的地名(实寄封时特别重要)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)","stampOnCover":"封上邮票的图案和文字描述(如果是实寄封，仔细看封上贴的邮票)"}。如果是实寄封，postmark必填。只输出JSON。'},
+            {type:'text', text:'仔细看这张图片，输出JSON：{"itemType":"物品类型(stamp=仅邮票/cover=实寄封/其他)","texts":"图片上可见的文字","code":"邮票志号(如T46,纪94M,如有)","name":"邮票名称","postmark":"邮戳上的地名(实寄封时特别重要)","year":"年份数字","dynasty":"朝代(清代/民国/新中国)"}。如果是实寄封，postmark必填。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
@@ -335,7 +337,7 @@ async function callAI(base64Image) {
           messages: [{
             role: 'user',
             content: [
-              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(看邮票上文字)","faceValue":"面值","stampDesc":"邮票图案描述","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测可能的邮票。只输出JSON。'},
+              {type:'text', text:'这是一张实寄封/首日封图片。请仔细观察封上贴的邮票部分，输出JSON：{"name":"邮票名称(如庚申年猴票)","code":"志号(如T46)","faceValue":"面值","stampDesc":"邮票图案描述","dynasty":"朝代(清代/民国/新中国)","year":"发行年份","category":"分类(经典/纪特/生肖等)"}。如果看不清邮票细节，根据邮戳年份和寄出地推测。只输出JSON。'},
               {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
             ]
           }],
@@ -348,11 +350,14 @@ async function callAI(base64Image) {
     }
 
     // Build combined extracted data for matching
+    var resultName = (stampInfo && stampInfo.name) || info.name || info.texts || '';
+    var resultCode = (stampInfo && stampInfo.code) || info.code || '';
     var extracted = {
       texts: info.texts || '',
-      name: stampInfo ? stampInfo.name : (info.texts || ''),
-      dynasty: info.dynasty || '',
-      year: info.year || '',
+      name: resultName,
+      code: resultCode,
+      dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
+      year: (stampInfo && stampInfo.year) || info.year || '',
       face: (stampInfo && stampInfo.faceValue) || '',
       region: '',
       type: info.itemType === 'cover' ? '首日实寄封' : '邮票',
@@ -365,7 +370,7 @@ async function callAI(base64Image) {
     if (matched) {
       return {
         code: matched.code || '',
-        name: matched.code ? matched.code + ' ' + matched.name : matched.name,
+        name: matched.name,  // base name only, autoName will prepend code
         dynasty: matched.dynasty,
         year: matched.year,
         faceValue: matched.face,
@@ -382,7 +387,8 @@ async function callAI(base64Image) {
 
     // Step 4: Return best available info
     return {
-      name: (stampInfo && stampInfo.name) || info.texts || '未知',
+      code: resultCode,
+      name: resultName || '未知',
       dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
       year: (stampInfo && stampInfo.year) || info.year || '',
       faceValue: (stampInfo && stampInfo.faceValue) || '',
@@ -543,6 +549,7 @@ async function recognizeStamp(base64) {
   var data = await callAI(base64);
 
   if (data) {
+    // Store base name separately (without code/prefix) for auto-naming
     document.getElementById('f-code').value = data.code || '';
     document.getElementById('f-name').value = data.name || '';
     document.getElementById('f-dyn').value = data.dynasty || '';
@@ -589,29 +596,19 @@ function showMarketLinks() {
 
 function autoName() {
   var code = document.getElementById('f-code').value.trim();
-  var name = document.getElementById('f-name').value.trim();
+  // f-name stores the base name (what AI identified or user entered)
+  var baseName = document.getElementById('f-name').value.trim();
   var type = document.getElementById('f-type').value;
   var postmark = document.getElementById('f-postmark').value.trim();
 
-  // Extract the base name (remove code prefix if exists)
-  var baseName = name;
+  // Build name from parts
+  var parts = [];
+  if (code) parts.push(code);
+  if (baseName) parts.push(baseName);
+  else parts.push('待定');
+  if ((type === '首日实寄封' || type === '首日封') && postmark) parts.push(postmark);
 
-  if (type === '首日实寄封' || type === '首日封') {
-    // 志号 + 名称 + 寄出地
-    var parts = [];
-    if (code) parts.push(code);
-    if (baseName && baseName.indexOf(code) !== 0) parts.push(baseName);
-    else if (!baseName) parts.push('待定');
-    if (postmark) parts.push(postmark);
-    document.getElementById('f-name').value = parts.join(' ');
-  } else {
-    // 志号 + 名称
-    var parts2 = [];
-    if (code) parts2.push(code);
-    if (baseName && baseName.indexOf(code) !== 0) parts2.push(baseName);
-    else if (!baseName) parts2.push('待定');
-    document.getElementById('f-name').value = parts2.join(' ');
-  }
+  document.getElementById('f-name').value = parts.join(' ');
 }
 
 function saveStamp() {
