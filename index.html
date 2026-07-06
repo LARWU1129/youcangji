@@ -392,12 +392,32 @@ function handleImage(input) {
   var file = input.files[0];
   var reader = new FileReader();
   reader.onload = function(e) {
-    var base64 = e.target.result.split(',')[1];
-    document.getElementById('scanArea').innerHTML = '<img src="data:image/jpeg;base64,'+base64+'" class="preview-img">';
-    window._currentImage = base64;
-    recognizeStamp(base64);
+    var fullBase64 = e.target.result;
+    var base64Data = fullBase64.split(',')[1];
+    window._currentImage = base64Data;
+    window._currentImageFull = fullBase64;
+
+    // Show preview with edit/confirm options
+    document.getElementById('scanArea').innerHTML =
+      '<img src="'+fullBase64+'" class="preview-img" id="previewImg" style="max-height:250px">'
+      + '<div style="display:flex;gap:8px;margin-top:8px;justify-content:center">'
+      + '<button class="btn out" style="flex:1;font-size:12px;padding:8px" onclick="retake()">✕ 重选</button>'
+      + '<button class="btn pri" style="flex:1;font-size:12px;padding:8px" onclick="confirmImage()">✓ 确认并识别</button>'
+      + '</div>'
+      + '<p style="font-size:11px;color:var(--m);margin-top:6px;text-align:center">💡 手机选图后可在系统相册中裁剪编辑</p>';
   };
   reader.readAsDataURL(file);
+}
+
+function confirmImage() {
+  if (window._currentImage) {
+    recognizeStamp(window._currentImage);
+  }
+}
+
+function imgTag(base64, cls) {
+  if (!base64) return '<div class="th" style="'+(cls||'')+'">邮</div>';
+  return '<img src="data:image/jpeg;base64,'+base64+'" class="th" style="object-fit:cover;'+(cls||'')+'">';
 }
 
 async function recognizeStamp(base64) {
@@ -544,14 +564,14 @@ function renderRecent() {
   var c = document.getElementById('recent');
   var list = stamps.slice(-6).reverse();
   c.innerHTML = list.length ? list.map(function(s){
-    return '<div class="hc" onclick="showDetail(\''+s.id+'\')"><div class="th">邮</div><div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="mt">'+s.dynasty+' · '+s.createdAt+'</div></div></div>';
+    return '<div class="hc" onclick="showDetail(\''+s.id+'\')">'+imgTag(s.image)+'<div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="mt">'+s.dynasty+' · '+s.createdAt+'</div></div></div>';
   }).join('') : '<div style="font-size:13px;color:var(--m);padding:20px 0">还没有藏品，快去拍照识别吧</div>';
 }
 
 function renderCollection() {
   var c = document.getElementById('collGrid');
   c.innerHTML = stamps.length ? stamps.slice().reverse().map(function(s){
-    return '<div class="sc" onclick="showDetail(\''+s.id+'\')"><div class="th">邮</div><div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="pr">'+(s.dynasty||'')+'</div></div></div>';
+    return '<div class="sc" onclick="showDetail(\''+s.id+'\')">'+imgTag(s.image)+'<div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="pr">'+(s.dynasty||'')+'</div></div></div>';
   }).join('') : '<div class="empty">还没有收藏的邮票</div>';
 }
 
@@ -570,7 +590,7 @@ function doSearch() {
   });
   var c = document.getElementById('searchGrid');
   c.innerHTML = list.length ? list.map(function(s){
-    return '<div class="sc" onclick="showDetail(\''+s.id+'\')"><div class="th">邮</div><div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="pr">'+s.dynasty+'</div></div></div>';
+    return '<div class="sc" onclick="showDetail(\''+s.id+'\')">'+imgTag(s.image)+'<div class="if"><div class="nm">'+(s.name||'未知')+'</div><div class="pr">'+s.dynasty+'</div></div></div>';
   }).join('') : '<div class="empty">没有匹配结果</div>';
 }
 
@@ -585,7 +605,7 @@ function showDetail(id) {
   if (!s) return;
   go('detail');
   var html = '';
-  if (s.image) html += '<img src="data:image/jpeg;base64,'+s.image+'" class="preview-img" style="margin:8px 16px;width:calc(100%-32px)">';
+  if (s.image) html += '<div style="padding:0 16px"><img src="data:image/jpeg;base64,'+s.image+'" style="width:100%;max-height:260px;object-fit:contain;border-radius:var(--r);margin:8px 0"></div>';
   html += '<div class="dhdr"><h2>'+(s.name||'未知')+'</h2><span style="color:var(--m);font-size:12px">'+s.createdAt+'</span></div>';
   html += '<div class="dg">'+(s.code?'<div class="di"><div class="l">志号</div><div class="v">'+s.code+'</div></div>':'')+'<div class="di"><div class="l">年代</div><div class="v">'+(s.dynasty||'-')+'</div></div><div class="di"><div class="l">年份</div><div class="v">'+(s.year||'-')+'</div></div><div class="di"><div class="l">面值</div><div class="v">'+(s.faceValue||'-')+'</div></div><div class="di"><div class="l">分类</div><div class="v">'+(s.category||'-')+'</div></div><div class="di"><div class="l">地区</div><div class="v">'+(s.region||'-')+'</div></div><div class="di"><div class="l">类型</div><div class="v">'+(s.stampType||'-')+'</div></div>'+(s.postmark?'<div class="di"><div class="l">邮戳/寄出地</div><div class="v">'+s.postmark+'</div></div>':'')+'</div>';
   if (s.description) html += '<div class="db"><h3>描述</h3><p>'+s.description+'</p></div>';
