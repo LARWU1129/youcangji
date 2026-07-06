@@ -220,8 +220,10 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
     <div class="pmi" onclick="exportData()"><span class="t">导出数据</span><span class="a">›</span></div>
     <div class="pmi" onclick="clearData()"><span class="t">清空所有数据</span><span class="a">›</span></div>
     <div class="pmi" onclick="checkUpdate()"><span class="t">检查更新</span><span class="a">›</span></div>
-    <div style="text-align:center;padding:16px;font-size:11px;color:var(--m)">版本 v3 ·
+    <div style="text-align:center;padding:16px;font-size:11px;color:var(--m)">
+      版本 <span id="verNum">v4</span> ·
       <span id="cacheStatus">已缓存</span>
+      <span id="updateNotice" style="display:none;color:#E93D82;font-weight:600;cursor:pointer" onclick="location.reload()"> · 有新版本，点击刷新</span>
     </div>
   </div>
 </div>
@@ -782,37 +784,51 @@ function clearData() {
 updateStats();
 renderAll();
 
-// PWA install
+// PWA install - aggressive update
 var swReg = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+    navigator.serviceWorker.register('service-worker.js?v=4').then(function(reg) {
       swReg = reg;
-      // Check for updates
+
+      // Check if there's a waiting service worker (already updated but not active)
+      if (reg.waiting) {
+        showUpdateNotice();
+      }
+
+      // Listen for new SW installing
       reg.addEventListener('updatefound', function() {
         var sw = reg.installing;
         sw.addEventListener('statechange', function() {
+          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+            // New SW installed but waiting to activate
+            showUpdateNotice();
+          }
           if (sw.state === 'activated') {
-            document.getElementById('cacheStatus').textContent = '有新版本，请关闭应用重新打开';
+            location.reload();
           }
         });
       });
     });
-    // Listen for controller change (new SW took over)
+
+    // Listen for controller change (SW took over)
     navigator.serviceWorker.addEventListener('controllerchange', function() {
-      document.getElementById('cacheStatus').textContent = '新版本已就绪，刷新生效';
+      location.reload();
     });
   });
+}
+
+function showUpdateNotice() {
+  var notice = document.getElementById('updateNotice');
+  var status = document.getElementById('cacheStatus');
+  if (notice) notice.style.display = 'inline';
+  if (status) status.textContent = '可更新';
 }
 
 function checkUpdate() {
   if (swReg) {
     swReg.update().then(function() {
-      toast('正在检查更新...');
-      setTimeout(function() {
-        document.getElementById('cacheStatus').textContent = '检查完成';
-        toast('✅ 如有新版本，下次打开生效');
-      }, 2000);
+      toast('检查更新中...');
     });
   } else {
     toast('Service Worker 不可用');
@@ -862,4 +878,4 @@ setTimeout(function() {
 </script>
 </body>
 </html>
-/* Mon Jul  6 19:58:59 CST 2026 */
+

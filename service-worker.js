@@ -1,4 +1,4 @@
-const CACHE = 'youcangji-v3';
+const CACHE = 'youcangji-v4';
 const ASSETS = [
   'index.html',
   'manifest.json',
