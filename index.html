@@ -379,7 +379,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是中国邮票知识库。根据给定信息，输出JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","patternDescription":"邮票图案的详细文化背景解读：描述图案内容、来源、文化寓意、历史背景等（200字左右，不要简单描述画面，要讲图案背后的文化故事）","description":"邮票基本信息(发行目的、印刷工艺、收藏价值等)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。特别注意：patternDescription要有深度，举例：(1)图案是古代简牍，就介绍简牍的历史、在中国文化中的地位、这一件文物的出处；(2)图案是名画，就介绍画作背景和画家；(3)图案是建筑，就介绍建筑的历史和特色。只输出JSON。'},
+            {type:'text', text:'你是中国邮票知识库，精通中国邮政发行的所有邮票。根据志号等信息，输出JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"邮票图案上的具体文物/艺术作品名称(如"云梦睡虎地秦简"、"富春山居图"、"司母戊鼎"等，要有具体名称)","patternDescription":"邮票图案的详细文化背景解读(200字左右)：先说明这是哪一件具体的文物/艺术品，然后介绍它的出处、年代、文化意义、现存何处。如果是文物，讲清楚它的历史价值和考古背景。","description":"邮票基本信息(发行目的、印刷工艺、设计者、收藏价值等)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。关键要求：exactArtifact必须写具体的文物/艺术品名称，不能笼统说"古代简牍""名画"这类泛称，要说清楚是哪一件。只输出JSON。'},
           ]
         }],
         max_tokens:2048,
@@ -391,10 +391,11 @@ async function callAI(base64Image) {
     knowledge.source = 'ai_knowledge';
     knowledge.matchHint = '🔍 AI 知识库匹配';
     knowledge.postmark = extracted.postmark;
-    // Combine pattern description + basic description
+    // Combine artifact + pattern + description
     var descParts = [];
     if (info.itemType === 'cover') descParts.push('【类型】实寄封');
-    if (stampInfo && stampInfo.stampDesc) descParts.push('【图案】' + stampInfo.stampDesc);
+    if (knowledge.exactArtifact) descParts.push('【文物/图案】' + knowledge.exactArtifact);
+    if (stampInfo && stampInfo.stampDesc) descParts.push('【画面】' + stampInfo.stampDesc);
     if (knowledge.patternDescription) descParts.push('【文化背景】' + knowledge.patternDescription);
     if (knowledge.description) descParts.push('【概况】' + knowledge.description);
     knowledge.description = descParts.join('\n') || knowledge.description;
