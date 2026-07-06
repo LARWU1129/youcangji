@@ -123,12 +123,17 @@ body{font-family:var(--fb);background:var(--b);color:var(--i);max-width:430px;ma
 
 <div class="p" id="scan">
   <div class="tb"><h1>AI 识别</h1><div style="width:36px"></div></div>
-  <div class="scan-area" id="scanArea" onclick="pickImage()">
+  <div class="scan-area" id="scanArea">
     <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" fill="none" stroke-width="1.8"/><circle cx="12" cy="13" r="4" fill="none" stroke-width="1.8"/></svg>
-    <div class="t1">点击拍照或选择照片</div>
-    <div class="t2">支持相册选择或相机拍摄</div>
+    <div class="t1">选择邮票图片</div>
+    <div class="t2" style="margin-bottom:16px">AI 自动识别邮票信息</div>
+    <div style="display:flex;gap:12px">
+      <button class="btn pri" style="flex:1;font-size:13px;padding:10px" onclick="pickCamera()">📸 拍照</button>
+      <button class="btn gold" style="flex:1;font-size:13px;padding:10px" onclick="pickGallery()">🖼️ 相册</button>
+    </div>
   </div>
-  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)">
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)">
+  <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImage(this)">
   <div id="aiResult"></div>
   <div class="fm" id="saveForm" style="display:none">
     <label>邮票名称</label><input id="f-name">
@@ -244,7 +249,8 @@ async function callAI(base64Image) {
 }
 
 // ===== Image Picker =====
-function pickImage() { document.getElementById('fileInput').click(); }
+function pickCamera() { document.getElementById('cameraInput').click(); }
+function pickGallery() { document.getElementById('galleryInput').click(); }
 
 function handleImage(input) {
   if (!input.files || !input.files[0]) return;
@@ -316,7 +322,8 @@ function retake() {
   document.getElementById('aiResult').innerHTML = '';
   document.getElementById('saveForm').style.display = 'none';
   window._currentImage = null;
-  document.getElementById('fileInput').value = '';
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('galleryInput').value = '';
 }
 
 // ===== Delete =====
@@ -449,16 +456,41 @@ var dp;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   dp = e;
-  // Show install banner
+  showInstallBanner('install');
+});
+
+function showInstallBanner(type) {
   var banner = document.createElement('div');
   banner.id = 'installBanner';
-  banner.style.cssText = 'position:fixed;bottom:80px;left:0;right:0;max-width:430px;margin:0 auto;background:var(--p);color:#FFF;padding:12px 16px;z-index:999;display:flex;align-items:center;gap:12px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
-  banner.innerHTML = '<div style="flex:1"><div style="font-weight:600;font-size:14px">邮藏集</div><div style="font-size:11px;opacity:0.8">安装到桌面，像 App 一样使用</div></div><button id="installBtn" style="padding:6px 16px;border-radius:999px;background:#FFF;color:var(--p);border:none;font-size:13px;font-weight:600;cursor:pointer">安装</button>';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;max-width:398px;margin:0 auto;background:var(--p);color:#FFF;padding:14px 16px;z-index:999;display:flex;align-items:center;gap:12px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+  if (type === 'install') {
+    banner.innerHTML = '<div style="flex:1"><div style="font-weight:600;font-size:14px">邮藏集</div><div style="font-size:11px;opacity:0.8">安装到桌面，像 App 一样使用</div></div><button id="installBtn" style="padding:7px 16px;border-radius:999px;background:#FFF;color:var(--p);border:none;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">安装</button><span id="closeBanner" style="cursor:pointer;opacity:0.6;font-size:18px;padding:4px">&times;</span>';
+  } else {
+    banner.innerHTML = '<div style="flex:1"><div style="font-weight:600;font-size:14px">邮藏集</div><div style="font-size:11px;opacity:0.8">iOS: 点分享按钮 → 添加到主屏幕</div></div><span id="closeBanner" style="cursor:pointer;opacity:0.6;font-size:18px;padding:4px">&times;</span>';
+  }
   document.body.appendChild(banner);
-  document.getElementById('installBtn').onclick = function() {
+  document.getElementById('closeBanner').onclick = function(){banner.remove()};
+  var btn = document.getElementById('installBtn');
+  if (btn) btn.onclick = function() {
     if (dp) { dp.prompt(); dp.userChoice.then(function(){dp=null;banner.remove()}); }
   };
-});
+}
+
+// iOS: show install tip after 3 seconds if not installed
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+var isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+if (!isStandalone) {
+  setTimeout(function() {
+    if (!document.getElementById('installBanner') && !dp) {
+      if (isIOS) showInstallBanner('ios');
+    }
+  }, 5000);
+}
+setTimeout(function() {
+  if (!document.getElementById('installBanner') && !dp && !isIOS) {
+    showInstallBanner('ios');
+  }
+}, 8000);
 </script>
 </body>
 </html>
