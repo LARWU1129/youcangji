@@ -379,7 +379,7 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'再看这张邮票/实寄封图片，输出JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"邮票/实寄封上图案的具体文物或艺术作品名称（要非常精确，如"云梦睡虎地秦简"不是"楚简"、"千里江山图"不是"山水画"。看清楚邮票上的图案到底是什么，给出确切名称）","patternDescription":"图案的详细文化背景解读(200字左右)：这是哪一件具体的文物/艺术品，它的出处、年代、文化意义、现存何处","description":"邮票基本信息(发行目的、印刷工艺、设计者、收藏价值等)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。重要：exactArtifact必须看图片确认，不能猜错。只输出JSON。'},
+            {type:'text', text:'你是中国邮票专家。根据图片和志号，输出JSON：{"name":"邮票/实寄封的准确名称(如"中华全国集邮联合会第九次代表大会"，不含志号，要完整的官方名称)","code":"志号(如2025-25)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","exactArtifact":"邮票上图案展示的具体文物名称（精确到哪一批文物，如"里耶秦简"或"睡虎地秦简"或"郭店楚简"，看图片确认到底是哪一个，不要混淆不同出土文物）","patternDescription":"图案的详细文化背景：这件文物是什么、何时何地出土、内容意义、收藏何处","description":"邮票发行信息","estimatedPrice":"参考价格"}。关键：1.name必须是完整官方名称 2.exactArtifact看清楚图片确认是哪一简 3.邮戳文字可能环形变形，东≠齐。只输出JSON。'},
             {type:'image_url', image_url:{url:'data:image/jpeg;base64,'+base64Image}}
           ]
         }],
