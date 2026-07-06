@@ -379,10 +379,10 @@ async function callAI(base64Image) {
         messages: [{
           role: 'user',
           content: [
-            {type:'text', text:'你是中国邮票知识库。根据给定信息，输出这张邮票的完整信息JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","description":"详细描述(材质/印刷/历史背景/收藏价值)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。如果信息不足，根据你的知识补充最合理的推测。只输出JSON。'},
+            {type:'text', text:'你是中国邮票知识库。根据给定信息，输出JSON：{"name":"邮票名称(不含志号)","code":"志号(如T46,纪94M)","dynasty":"朝代","year":"发行年份","faceValue":"面值","category":"分类(经典/纪特/民国/文革/生肖/普票)","region":"地区(中国内地/香港/澳门/台湾/海外)","stampType":"类型(邮票/小型张/小版票/首日实寄封)","patternDescription":"邮票图案的详细文化背景解读：描述图案内容、来源、文化寓意、历史背景等（200字左右，不要简单描述画面，要讲图案背后的文化故事）","description":"邮票基本信息(发行目的、印刷工艺、收藏价值等)","estimatedPrice":"市场参考价格"}。参考信息：'+knowledgeQuery+'。特别注意：patternDescription要有深度，举例：(1)图案是古代简牍，就介绍简牍的历史、在中国文化中的地位、这一件文物的出处；(2)图案是名画，就介绍画作背景和画家；(3)图案是建筑，就介绍建筑的历史和特色。只输出JSON。'},
           ]
         }],
-        max_tokens:1024,
+        max_tokens:2048,
         response_format:{type:'json_object'}
       })
     });
@@ -391,12 +391,13 @@ async function callAI(base64Image) {
     knowledge.source = 'ai_knowledge';
     knowledge.matchHint = '🔍 AI 知识库匹配';
     knowledge.postmark = extracted.postmark;
-    // Use the combined description if available
+    // Combine pattern description + basic description
     var descParts = [];
-    if (info.itemType === 'cover') descParts.push('实寄封');
-    if (stampInfo && stampInfo.stampDesc) descParts.push(stampInfo.stampDesc);
-    if (knowledge.description) descParts.push(knowledge.description);
-    knowledge.description = descParts.join('。') || knowledge.description;
+    if (info.itemType === 'cover') descParts.push('【类型】实寄封');
+    if (stampInfo && stampInfo.stampDesc) descParts.push('【图案】' + stampInfo.stampDesc);
+    if (knowledge.patternDescription) descParts.push('【文化背景】' + knowledge.patternDescription);
+    if (knowledge.description) descParts.push('【概况】' + knowledge.description);
+    knowledge.description = descParts.join('\n') || knowledge.description;
     return knowledge;
       dynasty: (stampInfo && stampInfo.dynasty) || info.dynasty || '',
       year: (stampInfo && stampInfo.year) || info.year || '',
